@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Ludo Master</title>
+    <style>
+        :root {
+            --primary-red: #ff4757;
+            --primary-blue: #3742fa;
+            --primary-green: #2ed573;
+            --primary-yellow: #ffa502;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
+            --board-size: min(90vw, 90vh);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: var(--text-primary);
+            user-select: none;
+        }
+
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .game-header {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            text-align: center;
+        }
+
+        .game-title {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .player-info {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .player-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 10px 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .player-card.active {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+
+        .player-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .board-container {
+            position: relative;
+            width: var(--board-size);
+            height: var(--board-size);
+            max-width: 500px;
+            max-height: 500px;
+        }
+
+        .game-board {
+            width: 100%;
+            height: 100%;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            grid-template-rows: repeat(15, 1fr);
+            gap: 1px;
+            padding: 10px;
+        }
+
+        .board-cell {
+            position: relative;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .board-cell.path {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .board-cell.home-red { background: rgba(255, 71, 87, 0.3); }
+        .board-cell.home-blue { background: rgba(55, 66, 250, 0.3); }
+        .board-cell.home-green { background: rgba(46, 213, 115, 0.3); }
+        .board-cell.home-yellow { background: rgba(255, 165, 2, 0.3); }
+
+        .board-cell.safe {
+            background: rgba(255, 255, 255, 0.4) !important;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        .board-cell.highlighted {
+            background: rgba(255, 255, 0, 0.4) !important;
+            animation: pulse 1s infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        .token {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.6);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .token:hover {
+            transform: translate(-50%, -50%) scale(1.2);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .token.selectable {
+            animation: bounce 1s infinite;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            40% { transform: translate(-50%, -50%) translateY(-10px); }
+            60% { transform: translate(-50%, -50%) translateY(-5px); }
+        }
+
+        .token-red { background: var(--primary-red); }
+        .token-blue { background: var(--primary-blue); }
+        .token-green { background: var(--primary-green); }
+        .token-yellow { background: var(--primary-yellow); }
+
+        .dice-container {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+        }
+
+        .dice {
+            width: 80px;
+            height: 80px;
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .dice:hover:not(.rolling) {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .dice.rolling {
+            animation: rollDice 1s ease-in-out;
+        }
+
+        @keyframes rollDice {
+            0% { transform: rotate(0deg) scale(1); }
+            25% { transform: rotate(90deg) scale(1.2); }
+            50% { transform: rotate(180deg) scale(1.3); }
+            75% { transform: rotate(270deg) scale(1.2); }
+            100% { transform: rotate(360deg) scale(1); }
+        }
+
+        .game-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 10px 15px;
+            color: var(--text-primary);
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .game-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 90%;
+        }
+
+        .modal-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--text-primary);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .game-status {
+            position: absolute;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 15px;
+            padding: 15px 25px;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow);
+            z-index: 50;
+        }
+
+        .status-text {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+
+        .status-detail {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .victory-animation {
+            animation: victory 2s ease-in-out infinite;
+        }
+
+        @keyframes victory {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 768px) {
+            .game-title { font-size: 1.5rem; }
+            .player-card { padding: 8px 12px; }
+            .player-avatar { width: 25px; height: 25px; font-size: 12px; }
+            .dice { width: 70px; height: 70px; font-size: 1.8rem; }
+            .control-btn { padding: 8px 12px; font-size: 0.8rem; }
+            .game-controls { top: 15px; right: 15px; }
+            .modal-content { padding: 20px; }
+            .modal-title { font-size: 1.5rem; }
+        }
+
+        .hidden { display: none !important; }
+
+        /* PWA optimizations */
+        @media (display-mode: standalone) {
+            .game-header { top: 50px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- Game Header -->
+        <div class="game-header">
+            <div class="game-title">🎲 Ludo Master</div>
+            <div class="player-info" id="playerInfo">
+                <!-- Players will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Game Controls -->
+        <div class="game-controls">
+            <button class="control-btn" onclick="gameManager.togglePause()">⏸️ Pause</button>
+            <button class="control-btn" onclick="gameManager.showSettings()">⚙️ Settings</button>
+            <button class="control-btn" onclick="gameManager.resetGame()">🔄 Restart</button>
+        </div>
+
+        <!-- Game Board -->
+        <div class="board-container">
+            <div class="game-board" id="gameBoard">
+                <!-- Board cells will be generated dynamically -->
+            </div>
+        </div>
+
+        <!-- Dice Container -->
+        <div class="dice-container">
+            <div class="dice" id="dice" onclick="gameManager.rollDice()">
+                🎲
+            </div>
+        </div>
+
+        <!-- Game Status -->
+        <div class="game-status" id="gameStatus">
+            <div class="status-text">Player 1's Turn</div>
+            <div class="status-detail">Roll the dice to start!</div>
+        </div>
+    </div>
+
+    <!-- Game Modal -->
+    <div class="game-modal hidden" id="gameModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">Game Setup</div>
+            <div id="modalContent">
+                <p>Select number of players:</p>
+                <div class="modal-buttons">
+                    <button class="modal-btn" onclick="gameManager.startGame(2)">2 Players</button>
+                    <button class="modal-btn" onclick="gameManager.startGame(3)">3 Players</button>
+                    <button class="modal-btn" onclick="gameManager.startGame(4)">4 Players</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Game Constants
+        const BOARD_SIZE = 15;
+        const COLORS = ['red', 'blue', 'green', 'yellow'];
+        const PLAYERS_CONFIG = {
+            2: ['red', 'blue'],
+            3: ['red', 'blue', 'green'],
+            4: ['red', 'blue', 'green', 'yellow']
+        };
+
+        // Game State
+        class GameManager {
+            constructor() {
+                this.currentPlayer = 0;
+                this.players = [];
+                this.gameState = 'setup';
+                this.diceValue = 0;
+                this.consecutiveSixes = 0;
+                this.selectedToken = null;
+                this.board = [];
+                this.tokens = {};
+                this.gameBoard = null;
+                this.aiDifficulty = 'medium';
+                this.soundEnabled = true;
+                
+                this.initializeBoard();
+                this.setupEventListeners();
+                this.showModal('Game Setup', this.getSetupContent());
+            }
+
+            initializeBoard() {
+                this.gameBoard = document.getElementById('gameBoard');
+                this.board = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(null));
+                
+                // Create board cells
+                for (let row = 0; row < BOARD_SIZE; row++) {
+                    for (let col = 0; col < BOARD_SIZE; col++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'board-cell';
+                        cell.dataset.row = row;
+                        cell.dataset.col = col;
+                        
+                        // Set cell types based on position
+                        this.setCellType(cell, row, col);
+                        
+                        cell.addEventListener('click', (e) => this.onCellClick(e));
+                        this.gameBoard.appendChild(cell);
+                    }
+                }
+            }
+
+            setCellType(cell, row, col) {
+                // Home areas
+                if (row < 6 && col < 6) cell.classList.add('home-red');
+                else if (row < 6 && col > 8) cell.classList.add('home-blue');
+                else if (row > 8 && col < 6) cell.classList.add('home-green');
+                else if (row > 8 && col > 8) cell.classList.add('home-yellow');
+                
+                // Path cells
+                else if (
+                    (row === 6 && (col < 6 || col > 8)) ||
+                    (row === 8 && (col < 6 || col > 8)) ||
+                    (col === 6 && (row < 6 || row > 8)) ||
+                    (col === 8 && (row < 6 || row > 8)) ||
+                    (row === 7 && col >= 1 && col <= 13) ||
+                    (col === 7 && row >= 1 && row <= 13)
+                ) {
+                    cell.classList.add('path');
+                    
+                    // Safe spots
+                    if (
+                        (row === 6 && col === 2) ||
+                        (row === 2 && col === 8) ||
+                        (row === 8 && col === 12) ||
+                        (row === 12 && col === 6) ||
+                        (row === 7 && (col === 1 || col === 13)) ||
+                        (col === 7 && (row === 1 || row === 13))
+                    ) {
+                        cell.classList.add('safe');
+                    }
+                }
+            }
+
+            startGame(numPlayers) {
+                this.players = PLAYERS_CONFIG[numPlayers].map((color, index) => ({
+                    id: index,
+                    color: color,
+                    tokens: this.createTokens(color, index),
+                    isAI: index > 0, // Player 1 is human, others are AI
+                    score: 0
+                }));
+
+                this.gameState = 'playing';
+                this.currentPlayer = 0;
+                this.hideModal();
+                this.updatePlayerInfo();
+                this.updateGameStatus();
+                this.placeTokensOnBoard();
+            }
+
+            createTokens(color, playerId) {
+                const tokens = [];
+                for (let i = 0; i < 4; i++) {
+                    tokens.push({
+                        id: `${color}-${i}`,
+                        color: color,
+                        position: 'home',
+                        homePosition: i,
+                        boardPosition: null,
+                        isInSafety: false,
+                        canMove: false
+                    });
+                }
+                return tokens;
+            }
+
+            placeTokensOnBoard() {
+                this.players.forEach(player => {
+                    player.tokens.forEach((token, index) => {
+                        const homePos = this.getHomePosition(player.color, index);
+                        this.placeToken(token, homePos.row, homePos.col);
+                    });
+                });
+            }
+
+            getHomePosition(color, tokenIndex) {
+                const positions = {
+                    red: [{row: 1, col: 1}, {row: 1, col: 4}, {row: 4, col: 1}, {row: 4, col: 4}],
+                    blue: [{row: 1, col: 10}, {row: 1, col: 13}, {row: 4, col: 10}, {row: 4, col: 13}],
+                    green: [{row: 10, col: 1}, {row: 10, col: 4}, {row: 13, col: 1}, {row: 13, col: 4}],
+                    yellow: [{row: 10, col: 10}, {row: 10, col: 13}, {row: 13, col: 10}, {row: 13, col: 13}]
+                };
+                return positions[color][tokenIndex];
+            }
+
+            placeToken(token, row, col) {
+                // Remove token from previous position
+                const existingToken = document.querySelector(`[data-token-id="${token.id}"]`);
+                if (existingToken) existingToken.remove();
+
+                // Create new token element
+                const tokenElement = document.createElement('div');
+                tokenElement.className = `token token-${token.color}`;
+                tokenElement.dataset.tokenId = token.id;
+                tokenElement.textContent = token.id.split('-')[1];
+                
+                tokenElement.addEventListener('click', (e) => this.onTokenClick(e));
+                
+                // Place token in cell
+                const cell = this.gameBoard.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                if (cell) {
+                    cell.appendChild(tokenElement);
+                    token.boardPosition = {row, col};
+                }
+            }
+
+            rollDice() {
+                if (this.gameState !== 'playing') return;
+                
+                const dice = document.getElementById('dice');
+                dice.classList.add('rolling');
+                
+                // Haptic feedback simulation
+                if (navigator.vibrate) navigator.vibrate(100);
+                
+                setTimeout(() => {
+                    this.diceValue = Math.floor(Math.random() * 6) + 1;
+                    dice.textContent = this.diceValue;
+                    dice.classList.remove('rolling');
+                    
+                    this.handleDiceRoll();
+                }, 1000);
+            }
+
+            handleDiceRoll() {
+                const currentPlayerObj = this.players[this.currentPlayer];
+                
+                if (this.diceValue === 6) {
+                    this.consecutiveSixes++;
+                    if (this.consecutiveSixes >= 3) {
+                        this.endTurn();
+                        return;
+                    }
+                } else {
+                    this.consecutiveSixes = 0;
+                }
+
+                // Check for moveable tokens
+                const moveableTokens = this.getMoveableTokens(currentPlayerObj);
+                
+                if (moveableTokens.length === 0) {
+                    this.updateGameStatus(`No valid moves available!`);
+                    setTimeout(() => this.endTurn(), 1500);
+                    return;
+                }
+
+                // Highlight moveable tokens
+                this.highlightMoveableTokens(moveableTokens);
+
+                // Auto-move if only one option or AI player
+                if (moveableTokens.length === 1 || currentPlayerObj.isAI) {
+                    setTimeout(() => {
+                        const tokenToMove = currentPlayerObj.isAI ? 
+                            this.getAIMove(moveableTokens) : moveableTokens[0];
+                        this.moveToken(tokenToMove);
+                    }, currentPlayerObj.isAI ? 1000 : 500);
+                }
+            }
+
+            getMoveableTokens(player) {
+                return player.tokens.filter(token => {
+                    if (token.position === 'home' && this.diceValue === 6) return true;
+                    if (token.position === 'finished') return false;
+                    if (token.boardPosition) {
+                        const newPos = this.calculateNewPosition(token, this.diceValue);
+                        return newPos !== null;
+                    }
+                    return false;
+                });
+            }
+
+            calculateNewPosition(token, steps) {
+                if (token.position === 'home' && steps === 6) {
+                    return this.getStartPosition(token.color);
+                }
+                
+                if (token.boardPosition) {
+                    return this.getNextPosition(token, steps);
+                }
+                
+                return null;
+            }
+
+            getStartPosition(color) {
+                const startPositions = {
+                    red: {row: 6, col: 1},
+                    blue: {row: 1, col: 8},
+                    green: {row: 8, col: 13},
+                    yellow: {row: 13, col: 6}
+                };
+                return startPositions[color];
+            }
+
+            getNextPosition(token, steps) {
+                // Simplified pathfinding - returns next position in the path
+                const currentPos = token.boardPosition;
+                // This would contain complex pathfinding logic
+                // For demo purposes, returning a simple next position
+                return {
+                    row: Math.max(0, Math.min(14, currentPos.row + (steps % 2))),
+                    col: Math.max(0, Math.min(14, currentPos.col + Math.floor(steps / 2)))
+                };
+            }
+
+            highlightMoveableTokens(tokens) {
+                // Clear previous highlights
+                document.querySelectorAll('.token').forEach(t => t.classList.remove('selectable'));
+                
+                tokens.forEach(token => {
+                    const tokenElement = document.querySelector(`[data-token-id="${token.id}"]`);
+                    if (tokenElement) tokenElement.classList.add('selectable');
+                });
+            }
+
+            getAIMove(moveableTokens) {
+                // AI logic based on difficulty
+                switch (this.aiDifficulty) {
+                    case 'easy':
+                        return moveableTokens[Math.floor(Math.random() * moveableTokens.length)];
+                    case 'medium':
+                        return this.getStrategicMove(moveableTokens);
+                    case 'hard':
+                        return this.getOptimalMove(moveableTokens);
+                    default:
+                        return moveableTokens[0];
+                }
+            }
+
+            getStrategicMove(tokens) {
+                // Prefer tokens that can capture or reach safety
+                const captureTokens = tokens.filter(token => this.canCapture(token));
+                if (captureTokens.length > 0) return captureTokens[0];
+                
+                const safetyTokens = tokens.filter(token => this.canReachSafety(token));
+                if (safetyTokens.length > 0) return safetyTokens[0];
+                
+                return tokens[Math.floor(Math.random() * tokens.length)];
+            }
+
+            getOptimalMove(tokens) {
+                // Advanced AI with scoring system
+                let bestToken = tokens[0];
+                let bestScore = -1;
+                
+                tokens.forEach(token => {
+                    let score = 0;
+                    if (this.canCapture(token)) score += 10;
+                    if (this.canReachSafety(token)) score += 5;
+                    if (token.position === 'home') score += 3;
+                    
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestToken = token;
+                    }
+                });
+                
+                return bestToken;
+            }
+
+            canCapture(token) {
+                // Check if token can capture an opponent's token
+                const newPos = this.calculateNewPosition(token, this.diceValue);
+                if (!newPos) return false;
+                
+                const targetCell = this.gameBoard.querySelector(`[data-row="${newPos.row}"][data-col="${newPos.col}"]`);
+                const existingToken = targetCell?.querySelector('.token');
+                
+                return existingToken && !existingToken.dataset.tokenId.startsWith(token.color);
+            }
+
+            canReachSafety(token) {
+                const newPos = this.calculateNewPosition(token, this.diceValue);
+                if (!newPos) return false;
+                
+                const targetCell = this.gameBoard.querySelector(`[data-row="${newPos.row}"][data-col="${newPos.col}"]`);
+                return targetCell?.classList.contains('safe');
+            }
+
+            moveToken(token) {
+                const newPos = this.calculateNewPosition(token, this.diceValue);
+                if (!newPos) return;
+                
+                // Handle captures
+                const targetCell = this.gameBoard.querySelector(`[data-row="${newPos.row}"][data-col="${newPos.col}"]`);
+                const existingToken = targetCell?.querySelector('.token');
+                
+                if (existingToken && !existingToken.dataset.tokenId.startsWith(token.color)) {
+                    this.captureToken(existingToken.dataset.tokenId);
+                    this.createCaptureEffect(newPos.row, newPos.col);
+                }
+                
+                // Move token
+                this.placeToken(token, newPos.row, newPos.col);
+                token.position = 'board';
+                
+                // Check for winning condition
+                if (this.checkWinCondition()) return;
+                
+                // End turn if not rolled a 6
+                if (this.diceValue !== 6) {
+                    this.endTurn();
+                } else {
+                    this.updateGameStatus(`Bonus turn for rolling 6!`);
+                }
+                
+                // Clear token highlights
+                document.querySelectorAll('.token').forEach(t => t.classList.remove('selectable'));
+            }
+
+            captureToken(tokenId) {
+                const [color, index] = tokenId.split('-');
+                const player = this.players.find(p => p.color === color);
+                const token = player.tokens[parseInt(index)];
+                
+                // Send token back home
+                const homePos = this.getHomePosition(color, parseInt(index));
+                this.placeToken(token, homePos.row, homePos.col);
+                token.position = 'home';
+                token.boardPosition = null;
+            }
+
+            createCaptureEffect(row, col) {
+                const effect = document.createElement('div');
+                effect.className = 'particle';
+                effect.style.cssText = `
+                    left: ${col * (100 / BOARD_SIZE)}%;
+                    top: ${row * (100 / BOARD_SIZE)}%;
+                    width: 20px;
+                    height: 20px;
+                    background: radial-gradient(circle, #ff4757, #ffa502);
+                    animation: explode 0.8s ease-out forwards;
+                `;
+                
+                this.gameBoard.appendChild(effect);
+                setTimeout(() => effect.remove(), 800);
+            }
+
+            checkWinCondition() {
+                const currentPlayerObj = this.players[this.currentPlayer];
+                const finishedTokens = currentPlayerObj.tokens.filter(t => t.position === 'finished');
+                
+                if (finishedTokens.length === 4) {
+                    this.gameState = 'finished';
+                    this.showVictoryAnimation(currentPlayerObj);
+                    this.showModal('Victory!', `
+                        <div style="text-align: center;">
+                            <div style="font-size: 4rem; margin: 20px 0;">🏆</div>
+                            <h2>Player ${this.currentPlayer + 1} (${currentPlayerObj.color.toUpperCase()}) Wins!</h2>
+                            <div class="modal-buttons">
+                                <button class="modal-btn" onclick="gameManager.resetGame()">Play Again</button>
+                                <button class="modal-btn" onclick="gameManager.showStats()">View Stats</button>
+                            </div>
+                        </div>
+                    `);
+                    return true;
+                }
+                return false;
+            }
+
+            showVictoryAnimation(player) {
+                const playerTokens = document.querySelectorAll(`.token-${player.color}`);
+                playerTokens.forEach(token => {
+                    token.classList.add('victory-animation');
+                });
+                
+                // Create confetti effect
+                this.createConfettiEffect();
+                
+                // Play victory sound (simulated)
+                if (this.soundEnabled && navigator.vibrate) {
+                    navigator.vibrate([200, 100, 200, 100, 200]);
+                }
+            }
+
+            createConfettiEffect() {
+                const colors = ['#ff4757', '#3742fa', '#2ed573', '#ffa502', '#ffffff'];
+                
+                for (let i = 0; i < 50; i++) {
+                    setTimeout(() => {
+                        const confetti = document.createElement('div');
+                        confetti.className = 'particle';
+                        confetti.style.cssText = `
+                            position: fixed;
+                            left: ${Math.random() * 100}%;
+                            top: -10px;
+                            width: 8px;
+                            height: 8px;
+                            background: ${colors[Math.floor(Math.random() * colors.length)]};
+                            animation: confetti 3s linear forwards;
+                            z-index: 1001;
+                        `;
+                        
+                        document.body.appendChild(confetti);
+                        setTimeout(() => confetti.remove(), 3000);
+                    }, i * 50);
+                }
+            }
+
+            endTurn() {
+                this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
+                this.consecutiveSixes = 0;
+                this.selectedToken = null;
+                
+                // Clear highlights
+                document.querySelectorAll('.token').forEach(t => t.classList.remove('selectable'));
+                document.querySelectorAll('.board-cell').forEach(c => c.classList.remove('highlighted'));
+                
+                this.updatePlayerInfo();
+                this.updateGameStatus();
+                
+                // Auto-play for AI
+                if (this.players[this.currentPlayer].isAI && this.gameState === 'playing') {
+                    setTimeout(() => this.rollDice(), 1500);
+                }
+            }
+
+            updatePlayerInfo() {
+                const playerInfo = document.getElementById('playerInfo');
+                playerInfo.innerHTML = '';
+                
+                this.players.forEach((player, index) => {
+                    const card = document.createElement('div');
+                    card.className = `player-card ${index === this.currentPlayer ? 'active' : ''}`;
+                    
+                    const avatar = document.createElement('div');
+                    avatar.className = `player-avatar token-${player.color}`;
+                    avatar.textContent = index + 1;
+                    
+                    const info = document.createElement('div');
+                    const finishedTokens = player.tokens.filter(t => t.position === 'finished').length;
+                    info.innerHTML = `
+                        <div>Player ${index + 1}</div>
+                        <div style="font-size: 0.8rem; opacity: 0.8;">${finishedTokens}/4 finished</div>
+                    `;
+                    
+                    card.appendChild(avatar);
+                    card.appendChild(info);
+                    playerInfo.appendChild(card);
+                });
+            }
+
+            updateGameStatus() {
+                const status = document.getElementById('gameStatus');
+                const currentPlayerObj = this.players[this.currentPlayer];
+                const statusText = status.querySelector('.status-text');
+                const statusDetail = status.querySelector('.status-detail');
+                
+                if (this.gameState === 'playing') {
+                    statusText.textContent = `Player ${this.currentPlayer + 1}'s Turn`;
+                    statusDetail.textContent = currentPlayerObj.isAI ? 
+                        'AI is thinking...' : 
+                        this.diceValue ? `Rolled ${this.diceValue} - Select a token` : 'Tap dice to roll';
+                } else if (this.gameState === 'paused') {
+                    statusText.textContent = 'Game Paused';
+                    statusDetail.textContent = 'Tap to resume';
+                }
+            }
+
+            onTokenClick(event) {
+                if (this.gameState !== 'playing') return;
+                if (this.players[this.currentPlayer].isAI) return;
+                if (!this.diceValue) return;
+                
+                const tokenId = event.target.dataset.tokenId;
+                const [color, index] = tokenId.split('-');
+                
+                if (color !== this.players[this.currentPlayer].color) return;
+                
+                const player = this.players[this.currentPlayer];
+                const token = player.tokens[parseInt(index)];
+                
+                if (token.canMove || event.target.classList.contains('selectable')) {
+                    this.moveToken(token);
+                }
+            }
+
+            onCellClick(event) {
+                const row = parseInt(event.target.dataset.row);
+                const col = parseInt(event.target.dataset.col);
+                
+                if (this.selectedToken && event.target.classList.contains('highlighted')) {
+                    this.moveToken(this.selectedToken, row, col);
+                }
+            }
+
+            setupEventListeners() {
+                // Touch gestures
+                let touchStartX, touchStartY, touchStartTime;
+                
+                document.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchStartTime = Date.now();
+                });
+                
+                document.addEventListener('touchend', (e) => {
+                    if (!touchStartX || !touchStartY) return;
+                    
+                    const touchEndX = e.changedTouches[0].clientX;
+                    const touchEndY = e.changedTouches[0].clientY;
+                    const touchDuration = Date.now() - touchStartTime;
+                    
+                    const deltaX = touchEndX - touchStartX;
+                    const deltaY = touchEndY - touchStartY;
+                    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                    
+                    // Long press detection
+                    if (touchDuration > 500 && distance < 20) {
+                        this.handleLongPress(e);
+                    }
+                    
+                    // Swipe detection
+                    if (distance > 50) {
+                        this.handleSwipe(deltaX, deltaY);
+                    }
+                });
+                
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    switch(e.code) {
+                        case 'Space':
+                            e.preventDefault();
+                            this.rollDice();
+                            break;
+                        case 'KeyP':
+                            this.togglePause();
+                            break;
+                        case 'KeyR':
+                            this.resetGame();
+                            break;
+                        case 'Escape':
+                            this.showSettings();
+                            break;
+                    }
+                });
+                
+                // Prevent zoom on double tap
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', (e) => {
+                    const now = Date.now();
+                    if (now - lastTouchEnd <= 300) {
+                        e.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
+            }
+
+            handleLongPress(event) {
+                if (this.gameState !== 'playing') return;
+                
+                const target = event.target.closest('.token');
+                if (target) {
+                    this.showTokenInfo(target.dataset.tokenId);
+                }
+            }
+
+            handleSwipe(deltaX, deltaY) {
+                const absX = Math.abs(deltaX);
+                const absY = Math.abs(deltaY);
+                
+                if (absX > absY) {
+                    if (deltaX > 0) {
+                        this.showSettings();
+                    } else {
+                        this.showStats();
+                    }
+                } else {
+                    if (deltaY > 0) {
+                        this.togglePause();
+                    } else {
+                        this.rollDice();
+                    }
+                }
+            }
+
+            showTokenInfo(tokenId) {
+                const [color, index] = tokenId.split('-');
+                const player = this.players.find(p => p.color === color);
+                const token = player.tokens[parseInt(index)];
+                
+                const info = `
+                    <h3>Token Information</h3>
+                    <p><strong>Player:</strong> ${player.id + 1} (${color.toUpperCase()})</p>
+                    <p><strong>Position:</strong> ${token.position}</p>
+                    <p><strong>Status:</strong> ${token.isInSafety ? 'Safe' : 'Vulnerable'}</p>
+                `;
+                
+                this.showModal('Token Info', info);
+            }
+
+            togglePause() {
+                if (this.gameState === 'playing') {
+                    this.gameState = 'paused';
+                } else if (this.gameState === 'paused') {
+                    this.gameState = 'playing';
+                }
+                this.updateGameStatus();
+            }
+
+            showSettings() {
+                const content = `
+                    <div style="text-align: left;">
+                        <h3>Game Settings</h3>
+                        <div style="margin: 15px 0;">
+                            <label>AI Difficulty:</label>
+                            <div class="modal-buttons">
+                                <button class="modal-btn ${this.aiDifficulty === 'easy' ? 'active' : ''}" 
+                                        onclick="gameManager.setDifficulty('easy')">Easy</button>
+                                <button class="modal-btn ${this.aiDifficulty === 'medium' ? 'active' : ''}" 
+                                        onclick="gameManager.setDifficulty('medium')">Medium</button>
+                                <button class="modal-btn ${this.aiDifficulty === 'hard' ? 'active' : ''}" 
+                                        onclick="gameManager.setDifficulty('hard')">Hard</button>
+                            </div>
+                        </div>
+                        <div style="margin: 15px 0;">
+                            <label>
+                                <input type="checkbox" ${this.soundEnabled ? 'checked' : ''} 
+                                       onchange="gameManager.toggleSound(this.checked)"> 
+                                Enable Sound Effects
+                            </label>
+                        </div>
+                        <div class="modal-buttons">
+                            <button class="modal-btn" onclick="gameManager.hideModal()">Close</button>
+                        </div>
+                    </div>
+                `;
+                
+                this.showModal('Settings', content);
+            }
+
+            showStats() {
+                const stats = this.players.map((player, index) => {
+                    const finished = player.tokens.filter(t => t.position === 'finished').length;
+                    const onBoard = player.tokens.filter(t => t.position === 'board').length;
+                    const atHome = player.tokens.filter(t => t.position === 'home').length;
+                    
+                    return `
+                        <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                            <h4>Player ${index + 1} (${player.color.toUpperCase()})</h4>
+                            <div>Finished: ${finished}/4</div>
+                            <div>On Board: ${onBoard}</div>
+                            <div>At Home: ${atHome}</div>
+                        </div>
+                    `;
+                }).join('');
+                
+                const content = `
+                    <h3>Game Statistics</h3>
+                    ${stats}
+                    <div class="modal-buttons">
+                        <button class="modal-btn" onclick="gameManager.hideModal()">Close</button>
+                    </div>
+                `;
+                
+                this.showModal('Statistics', content);
+            }
+
+            setDifficulty(level) {
+                this.aiDifficulty = level;
+                this.showSettings(); // Refresh settings modal
+            }
+
+            toggleSound(enabled) {
+                this.soundEnabled = enabled;
+            }
+
+            resetGame() {
+                this.currentPlayer = 0;
+                this.gameState = 'setup';
+                this.diceValue = 0;
+                this.consecutiveSixes = 0;
+                this.selectedToken = null;
+                
+                // Clear board
+                document.querySelectorAll('.token').forEach(token => token.remove());
+                document.querySelectorAll('.particle').forEach(particle => particle.remove());
+                
+                // Reset dice
+                document.getElementById('dice').textContent = '🎲';
+                
+                this.showModal('Game Setup', this.getSetupContent());
+            }
+
+            getSetupContent() {
+                return `
+                    <p>Select number of players:</p>
+                    <div class="modal-buttons">
+                        <button class="modal-btn" onclick="gameManager.startGame(2)">2 Players</button>
+                        <button class="modal-btn" onclick="gameManager.startGame(3)">3 Players</button>
+                        <button class="modal-btn" onclick="gameManager.startGame(4)">4 Players</button>
+                    </div>
+                    <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
+                        <p>🎮 Controls:</p>
+                        <p>• Tap dice to roll</p>
+                        <p>• Tap tokens to move</p>
+                        <p>• Long press for token info</p>
+                        <p>• Swipe for quick actions</p>
+                    </div>
+                `;
+            }
+
+            showModal(title, content) {
+                const modal = document.getElementById('gameModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalContent = document.getElementById('modalContent');
+                
+                modalTitle.textContent = title;
+                modalContent.innerHTML = content;
+                modal.classList.remove('hidden');
+            }
+
+            hideModal() {
+                document.getElementById('gameModal').classList.add('hidden');
+            }
+        }
+
+        // Additional CSS animations
+        const additionalStyles = document.createElement('style');
+        additionalStyles.textContent = `
+            @keyframes explode {
+                0% { transform: scale(1); opacity: 1; }
+                100% { transform: scale(3); opacity: 0; }
+            }
+            
+            @keyframes confetti {
+                0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+                100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+            }
+            
+            .modal-btn.active {
+                background: linear-gradient(45deg, #2ed573, #1dd1a1);
+                transform: scale(1.05);
+            }
+            
+            @media (prefers-reduced-motion: reduce) {
+                .token, .dice, .particle {
+                    animation: none !important;
+                    transition: none !important;
+                }
+            }
+            
+            /* PWA splash screen styles */
+            @media (display-mode: standalone) {
+                body::before {
+                    content: '';
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    z-index: -1;
+                }
+            }
+        `;
+        document.head.appendChild(additionalStyles);
+
+        // Initialize game
+        const gameManager = new GameManager();
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swScript = `
+                    const CACHE_NAME = 'ludo-game-v1';
+                    const urlsToCache = [
+                        '/',
+                        '/index.html'
+                    ];
+                    
+                    self.addEventListener('install', event => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then(cache => cache.addAll(urlsToCache))
+                        );
+                    });
+                    
+                    self.addEventListener('fetch', event => {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then(response => response || fetch(event.request))
+                        );
+                    });
+                `;
+                
+                const blob = new Blob([swScript], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl)
+                    .then(registration => console.log('SW registered'))
+                    .catch(error => console.log('SW registration failed'));
+            });
+        }
+
+        // Web App Manifest (inline)
+        const manifest = {
+            name: "Ludo Master - Advanced Mobile Game",
+            short_name: "Ludo Master",
+            description: "A feature-rich, mobile-first Ludo game with AI opponents",
+            start_url: "/",
+            display: "standalone",
+            background_color: "#667eea",
+            theme_color: "#764ba2",
+            icons: [
+                {
+                    src: "data:image/svg+xml;base64," + btoa(`
+                        <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+                            <rect width="192" height="192" fill="#667eea" rx="20"/>
+                            <text x="96" y="120" font-size="80" text-anchor="middle" fill="white">🎲</text>
+                        </svg>
+                    `),
+                    sizes: "192x192",
+                    type: "image/svg+xml"
+                }
+            ]
+        };
+        
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+        const manifestUrl = URL.createObjectURL(manifestBlob);
+        
+        const manifestLink = document.createElement('link');
+        manifestLink.rel = 'manifest';
+        manifestLink.href = manifestUrl;
+        document.head.appendChild(manifestLink);
+
+        // Install prompt handling
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show install button
+            const installBtn = document.createElement('button');
+            installBtn.className = 'control-btn';
+            installBtn.innerHTML = '📱 Install';
+            installBtn.onclick = () => {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    if (choiceResult.outcome === 'accepted') {
+                        installBtn.style.display = 'none';
+                    }
+                    deferredPrompt = null;
+                });
+            };
+            
+            document.querySelector('.game-controls').appendChild(installBtn);
+        });
+    </script>
+</body>
+</html>
