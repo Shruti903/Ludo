@@ -48,7 +48,7 @@ A beautiful, feature-rich, and modern web-based Ludo game with multiplayer suppo
 ## 🚀 Quick Start
 
 ### Play Online
-Visit the [live demo](https://your-username.github.io/ludo-master-pro) and start playing immediately!
+Visit the [live demo](https://shrutirajludo.vercel.app/)) and start playing immediately!
 
 ### Local Installation
 1. **Clone the repository**
@@ -220,7 +220,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🔗 Links
 
-- **Live Demo**: [Play Now](https://your-username.github.io/ludo-master-pro)
+- **Live Demo**: [Play Now] (https://shrutirajludo.vercel.app/)
 - **Report Issues**: [GitHub Issues](https://github.com/your-username/ludo-master-pro/issues)
 - **Feature Requests**: [GitHub Discussions](https://github.com/your-username/ludo-master-pro/discussions)
 - **Developer**: [Your Profile](https://github.com/your-username)
@@ -240,6 +240,6 @@ If you enjoy Ludo Master Pro, please:
 
 **🎲 Made with ❤️ for Ludo lovers everywhere**
 
-[⬆ Back to Top](#-ludo-master-pro)
+
 
 </div>
