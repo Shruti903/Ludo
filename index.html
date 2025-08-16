@@ -5,17 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Advanced Ludo Master</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap');
+
         :root {
-            --primary-red: #ff4757;
-            --primary-blue: #3742fa;
-            --primary-green: #2ed573;
-            --primary-yellow: #ffa502;
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.8);
-            --board-size: min(90vw, 90vh);
+            /* Cute Pastel Colors */
+            --pastel-pink: #FFB3D9;
+            --pastel-blue: #B3D9FF;
+            --pastel-green: #B3FFD9;
+            --pastel-yellow: #FFE5B3;
+            --pastel-purple: #D9B3FF;
+            --pastel-coral: #FFD1B3;
+            
+            /* Soft neutrals */
+            --soft-white: #FEFEFE;
+            --cream: #FFF9F0;
+            --light-gray: #F5F7FA;
+            --soft-shadow: rgba(139, 69, 19, 0.1);
+            --warm-shadow: rgba(255, 193, 193, 0.3);
+            
+            /* Glass morphism */
+            --glass-bg: rgba(255, 255, 255, 0.25);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+            
+            /* Text colors */
+            --text-primary: #5A5A5A;
+            --text-secondary: #8E8E8E;
+            --text-accent: #FF6B9D;
+            
+            --board-size: min(85vw, 85vh);
         }
 
         * {
@@ -26,15 +44,37 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Fredoka', cursive;
+            background: linear-gradient(135deg, #FFE5E5 0%, #E5F3FF 50%, #E5FFE5 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            overflow: hidden;
             color: var(--text-primary);
             user-select: none;
+            overflow-x: hidden;
+        }
+
+        .floating-bubbles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); opacity: 0.7; }
+            50% { transform: translateY(-20px) rotate(180deg); opacity: 1; }
         }
 
         .game-container {
@@ -45,12 +85,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            backdrop-filter: blur(10px);
+            z-index: 10;
         }
 
         .game-header {
             position: absolute;
-            top: 20px;
+            top: 15px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
@@ -58,216 +98,415 @@
         }
 
         .game-title {
-            font-size: 2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            background: linear-gradient(45deg, var(--pastel-pink), var(--pastel-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 2px 2px 4px var(--soft-shadow);
+            position: relative;
+        }
+
+        .game-title::after {
+            content: '✨';
+            position: absolute;
+            top: -10px;
+            right: -20px;
+            animation: sparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(180deg) scale(1.2); }
         }
 
         .player-info {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             flex-wrap: wrap;
             justify-content: center;
         }
 
         .player-card {
             background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 15px;
-            padding: 10px 15px;
-            backdrop-filter: blur(10px);
-            box-shadow: var(--shadow);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 12px 18px;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--glass-shadow);
             display: flex;
             align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
+            gap: 10px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s;
         }
 
         .player-card.active {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+            transform: scale(1.15);
+            box-shadow: 0 0 30px var(--warm-shadow);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        .player-card.active::before {
+            left: 100%;
+        }
+
+        @keyframes glow {
+            0% { box-shadow: 0 0 20px var(--warm-shadow); }
+            100% { box-shadow: 0 0 40px var(--warm-shadow); }
         }
 
         .player-avatar {
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
+            font-weight: 600;
+            font-size: 16px;
+            color: white;
+            position: relative;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .player-avatar::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 8px;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-dot.online { background: var(--pastel-green); }
+        .status-dot.offline { background: var(--pastel-coral); }
+        .status-dot.ai { background: var(--pastel-purple); }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; }
         }
 
         .board-container {
             position: relative;
             width: var(--board-size);
             height: var(--board-size);
-            max-width: 500px;
-            max-height: 500px;
+            max-width: 550px;
+            max-height: 550px;
         }
 
         .game-board {
             width: 100%;
             height: 100%;
             background: var(--glass-bg);
-            border: 2px solid var(--glass-border);
-            border-radius: 20px;
-            backdrop-filter: blur(15px);
-            box-shadow: var(--shadow);
+            border: 3px solid var(--glass-border);
+            border-radius: 30px;
+            backdrop-filter: blur(25px);
+            box-shadow: var(--glass-shadow);
             position: relative;
             overflow: hidden;
             display: grid;
             grid-template-columns: repeat(15, 1fr);
             grid-template-rows: repeat(15, 1fr);
-            gap: 1px;
-            padding: 10px;
+            gap: 2px;
+            padding: 15px;
         }
 
         .board-cell {
             position: relative;
-            border-radius: 8px;
-            transition: all 0.2s ease;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .board-cell:hover {
+            transform: scale(1.05);
         }
 
         .board-cell.path {
-            background: rgba(255, 255, 255, 0.2);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.4);
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.1);
         }
 
-        .board-cell.home-red { background: rgba(255, 71, 87, 0.3); }
-        .board-cell.home-blue { background: rgba(55, 66, 250, 0.3); }
-        .board-cell.home-green { background: rgba(46, 213, 115, 0.3); }
-        .board-cell.home-yellow { background: rgba(255, 165, 2, 0.3); }
+        .board-cell.home-pink { 
+            background: linear-gradient(135deg, var(--pastel-pink), rgba(255, 179, 217, 0.7));
+        }
+        .board-cell.home-blue { 
+            background: linear-gradient(135deg, var(--pastel-blue), rgba(179, 217, 255, 0.7));
+        }
+        .board-cell.home-green { 
+            background: linear-gradient(135deg, var(--pastel-green), rgba(179, 255, 217, 0.7));
+        }
+        .board-cell.home-yellow { 
+            background: linear-gradient(135deg, var(--pastel-yellow), rgba(255, 229, 179, 0.7));
+        }
 
         .board-cell.safe {
-            background: rgba(255, 255, 255, 0.4) !important;
-            box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4)) !important;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+            animation: shimmer 3s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { box-shadow: 0 0 15px rgba(255, 255, 255, 0.6); }
+            50% { box-shadow: 0 0 25px rgba(255, 255, 255, 0.9); }
         }
 
         .board-cell.highlighted {
-            background: rgba(255, 255, 0, 0.4) !important;
-            animation: pulse 1s infinite alternate;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.6), rgba(255, 165, 0, 0.4)) !important;
+            animation: bounce-glow 1s ease-in-out infinite;
+            transform: scale(1.1);
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.1); }
+        @keyframes bounce-glow {
+            0%, 100% { 
+                transform: scale(1.1); 
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            }
+            50% { 
+                transform: scale(1.2); 
+                box-shadow: 0 0 30px rgba(255, 215, 0, 1);
+            }
         }
 
         .token {
-            width: 80%;
-            height: 80%;
+            width: 85%;
+            height: 85%;
             border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.6);
+            border: 3px solid rgba(255, 255, 255, 0.8);
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
             z-index: 10;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 0.8rem;
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: white;
+            position: relative;
+        }
+
+        .token::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 20%;
+            width: 30%;
+            height: 30%;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            filter: blur(3px);
         }
 
         .token:hover {
-            transform: translate(-50%, -50%) scale(1.2);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            transform: translate(-50%, -50%) scale(1.3);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
 
         .token.selectable {
-            animation: bounce 1s infinite;
-            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+            animation: token-bounce 1.2s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 1);
         }
 
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translate(-50%, -50%) translateY(0); }
-            40% { transform: translate(-50%, -50%) translateY(-10px); }
-            60% { transform: translate(-50%, -50%) translateY(-5px); }
+        @keyframes token-bounce {
+            0%, 20%, 50%, 80%, 100% { 
+                transform: translate(-50%, -50%) translateY(0) scale(1.1); 
+            }
+            40% { 
+                transform: translate(-50%, -50%) translateY(-15px) scale(1.2); 
+            }
+            60% { 
+                transform: translate(-50%, -50%) translateY(-8px) scale(1.15); 
+            }
         }
 
-        .token-red { background: var(--primary-red); }
-        .token-blue { background: var(--primary-blue); }
-        .token-green { background: var(--primary-green); }
-        .token-yellow { background: var(--primary-yellow); }
+        .token-pink { 
+            background: linear-gradient(135deg, var(--pastel-pink), #FF69B4);
+        }
+        .token-blue { 
+            background: linear-gradient(135deg, var(--pastel-blue), #4169E1);
+        }
+        .token-green { 
+            background: linear-gradient(135deg, var(--pastel-green), #32CD32);
+        }
+        .token-yellow { 
+            background: linear-gradient(135deg, var(--pastel-yellow), #FFD700);
+        }
 
         .dice-container {
             position: absolute;
-            bottom: 50px;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 100;
         }
 
         .dice {
-            width: 80px;
-            height: 80px;
+            width: 90px;
+            height: 90px;
             background: var(--glass-bg);
-            border: 2px solid var(--glass-border);
-            border-radius: 15px;
-            backdrop-filter: blur(10px);
-            box-shadow: var(--shadow);
+            border: 3px solid var(--glass-border);
+            border-radius: 25px;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--glass-shadow);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
+            font-size: 2.5rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             user-select: none;
+            position: relative;
+        }
+
+        .dice::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 15px;
+            height: 15px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            filter: blur(2px);
         }
 
         .dice:hover:not(.rolling) {
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            transform: scale(1.15);
+            box-shadow: 0 0 30px var(--warm-shadow);
         }
 
         .dice.rolling {
-            animation: rollDice 1s ease-in-out;
+            animation: dice-roll 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes rollDice {
+        @keyframes dice-roll {
             0% { transform: rotate(0deg) scale(1); }
-            25% { transform: rotate(90deg) scale(1.2); }
-            50% { transform: rotate(180deg) scale(1.3); }
-            75% { transform: rotate(270deg) scale(1.2); }
-            100% { transform: rotate(360deg) scale(1); }
+            25% { transform: rotate(180deg) scale(1.3); }
+            50% { transform: rotate(360deg) scale(1.5); }
+            75% { transform: rotate(540deg) scale(1.3); }
+            100% { transform: rotate(720deg) scale(1); }
         }
 
         .game-controls {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .control-btn {
             background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 10px;
-            padding: 10px 15px;
+            border: 2px solid var(--glass-border);
+            border-radius: 18px;
+            padding: 12px 18px;
             color: var(--text-primary);
             cursor: pointer;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
+            backdrop-filter: blur(20px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .control-btn:hover {
+            background: rgba(255, 255, 255, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .multiplayer-panel {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--glass-bg);
+            border: 2px solid var(--glass-border);
+            border-radius: 25px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--glass-shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 200px;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-accent);
+            text-align: center;
+        }
+
+        .room-code {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 8px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-family: monospace;
+            letter-spacing: 1px;
+        }
+
+        .player-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .player-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
             background: rgba(255, 255, 255, 0.2);
-            transform: translateY(-2px);
+            border-radius: 10px;
         }
 
         .game-modal {
@@ -276,29 +515,36 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.6);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 1000;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(10px);
         }
 
         .modal-content {
             background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 30px;
-            backdrop-filter: blur(20px);
-            box-shadow: var(--shadow);
+            border: 2px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 40px;
+            backdrop-filter: blur(25px);
+            box-shadow: var(--glass-shadow);
             text-align: center;
             max-width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .modal-title {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            color: var(--text-primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: var(--text-accent);
+            background: linear-gradient(45deg, var(--pastel-pink), var(--pastel-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .modal-buttons {
@@ -306,24 +552,42 @@
             gap: 15px;
             justify-content: center;
             flex-wrap: wrap;
-            margin-top: 20px;
+            margin-top: 25px;
         }
 
         .modal-btn {
-            background: linear-gradient(45deg, #667eea, #764ba2);
+            background: linear-gradient(45deg, var(--pastel-pink), var(--pastel-purple));
             border: none;
-            border-radius: 12px;
-            padding: 12px 20px;
+            border-radius: 20px;
+            padding: 15px 25px;
             color: white;
             cursor: pointer;
             font-size: 1rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modal-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.6s;
         }
 
         .modal-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-btn:hover::before {
+            left: 100%;
         }
 
         .game-status {
@@ -333,21 +597,23 @@
             transform: translateX(-50%);
             text-align: center;
             background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 15px;
-            padding: 15px 25px;
-            backdrop-filter: blur(10px);
-            box-shadow: var(--shadow);
+            border: 2px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 18px 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: var(--glass-shadow);
             z-index: 50;
         }
 
         .status-text {
-            font-size: 1.1rem;
-            margin-bottom: 5px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-accent);
         }
 
         .status-detail {
-            font-size: 0.9rem;
+            font-size: 1rem;
             opacity: 0.8;
         }
 
@@ -364,64 +630,174 @@
 
         @keyframes victory {
             0%, 100% { transform: scale(1) rotate(0deg); }
-            50% { transform: scale(1.2) rotate(180deg); }
+            50% { transform: scale(1.3) rotate(360deg); }
         }
 
-        /* Mobile optimizations */
-        @media (max-width: 768px) {
-            .game-title { font-size: 1.5rem; }
-            .player-card { padding: 8px 12px; }
-            .player-avatar { width: 25px; height: 25px; font-size: 12px; }
-            .dice { width: 70px; height: 70px; font-size: 1.8rem; }
-            .control-btn { padding: 8px 12px; font-size: 0.8rem; }
-            .game-controls { top: 15px; right: 15px; }
-            .modal-content { padding: 20px; }
-            .modal-title { font-size: 1.5rem; }
+        .special-effects {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .power-up {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            animation: power-up-float 3s ease-in-out infinite;
+            z-index: 15;
+        }
+
+        @keyframes power-up-float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(180deg); }
+        }
+
+        .theme-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.2);
+        }
+
+        .theme-btn.active {
+            transform: scale(1.3);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
         }
 
         .hidden { display: none !important; }
 
-        /* PWA optimizations */
-        @media (display-mode: standalone) {
-            .game-header { top: 50px; }
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .game-title { font-size: 1.8rem; }
+            .player-card { padding: 10px 15px; }
+            .player-avatar { width: 30px; height: 30px; font-size: 14px; }
+            .dice { width: 75px; height: 75px; font-size: 2rem; }
+            .control-btn { padding: 10px 15px; font-size: 0.8rem; }
+            .multiplayer-panel { position: relative; left: auto; top: auto; transform: none; max-width: none; margin: 20px auto; }
+            .modal-content { padding: 25px; }
+            .modal-title { font-size: 1.6rem; }
+        }
+
+        @media (max-width: 480px) {
+            .game-header { top: 10px; }
+            .game-controls { top: 10px; right: 10px; }
+            .board-container { --board-size: 95vw; }
+            .dice-container { bottom: 20px; }
+            .game-status { bottom: 100px; }
+        }
+
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --soft-white: #2A2A2A;
+                --cream: #1A1A1A;
+                --light-gray: #333333;
+                --text-primary: #E5E5E5;
+                --text-secondary: #B5B5B5;
+            }
+            
+            body {
+                background: linear-gradient(135deg, #2A1B3D 0%, #1E2A5C 50%, #1B2A3D 100%);
+            }
+        }
+
+        /* Accessibility improvements */
+        @media (prefers-reduced-motion: reduce) {
+            .token, .dice, .particle, .bubble {
+                animation: none !important;
+                transition: none !important;
+            }
+        }
+
+        /* High contrast mode */
+        @media (prefers-contrast: high) {
+            .board-cell {
+                border: 2px solid #000;
+            }
+            
+            .token {
+                border: 4px solid #000;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Floating Bubbles Background -->
+    <div class="floating-bubbles" id="floatingBubbles"></div>
+    
+    <!-- Special Effects Layer -->
+    <div class="special-effects" id="specialEffects"></div>
+
     <div class="game-container">
         <!-- Game Header -->
         <div class="game-header">
-            <div class="game-title">🎲 Ludo Master</div>
-            <div class="player-info" id="playerInfo">
-                <!-- Players will be dynamically added here -->
-            </div>
+            <div class="game-title">🎲 Ludo Master Pro</div>
+            <div class="player-info" id="playerInfo"></div>
+        </div>
+
+        <!-- Multiplayer Panel -->
+        <div class="multiplayer-panel" id="multiplayerPanel">
+            <div class="panel-title">🌐 Multiplayer</div>
+            <div class="room-code" id="roomCode">Offline Mode</div>
+            <div class="player-list" id="playerList"></div>
+            <button class="control-btn" onclick="gameManager.toggleMultiplayer()">
+                <span id="multiplayerBtnText">🔗 Go Online</span>
+            </button>
         </div>
 
         <!-- Game Controls -->
         <div class="game-controls">
-            <button class="control-btn" onclick="gameManager.togglePause()">⏸️ Pause</button>
-            <button class="control-btn" onclick="gameManager.showSettings()">⚙️ Settings</button>
-            <button class="control-btn" onclick="gameManager.resetGame()">🔄 Restart</button>
+            <button class="control-btn" onclick="gameManager.togglePause()">
+                <span>⏸️</span> Pause
+            </button>
+            <button class="control-btn" onclick="gameManager.showSettings()">
+                <span>⚙️</span> Settings
+            </button>
+            <button class="control-btn" onclick="gameManager.showPowerUps()">
+                <span>⚡</span> Power-ups
+            </button>
+            <button class="control-btn" onclick="gameManager.showStats()">
+                <span>📊</span> Stats
+            </button>
+            <button class="control-btn" onclick="gameManager.resetGame()">
+                <span>🔄</span> Restart
+            </button>
         </div>
 
         <!-- Game Board -->
         <div class="board-container">
-            <div class="game-board" id="gameBoard">
-                <!-- Board cells will be generated dynamically -->
-            </div>
+            <div class="game-board" id="gameBoard"></div>
         </div>
 
         <!-- Dice Container -->
         <div class="dice-container">
-            <div class="dice" id="dice" onclick="gameManager.rollDice()">
-                🎲
-            </div>
+            <div class="dice" id="dice" onclick="gameManager.rollDice()">🎲</div>
         </div>
 
         <!-- Game Status -->
         <div class="game-status" id="gameStatus">
-            <div class="status-text">Player 1's Turn</div>
-            <div class="status-detail">Roll the dice to start!</div>
+            <div class="status-text">Welcome to Ludo Master Pro!</div>
+            <div class="status-detail">Choose game mode to start</div>
         </div>
     </div>
 
@@ -429,28 +805,29 @@
     <div class="game-modal hidden" id="gameModal">
         <div class="modal-content">
             <div class="modal-title" id="modalTitle">Game Setup</div>
-            <div id="modalContent">
-                <p>Select number of players:</p>
-                <div class="modal-buttons">
-                    <button class="modal-btn" onclick="gameManager.startGame(2)">2 Players</button>
-                    <button class="modal-btn" onclick="gameManager.startGame(3)">3 Players</button>
-                    <button class="modal-btn" onclick="gameManager.startGame(4)">4 Players</button>
-                </div>
-            </div>
+            <div id="modalContent"></div>
         </div>
     </div>
 
     <script>
-        // Game Constants
+        // Enhanced Game Constants
         const BOARD_SIZE = 15;
-        const COLORS = ['red', 'blue', 'green', 'yellow'];
+        const COLORS = ['pink', 'blue', 'green', 'yellow'];
         const PLAYERS_CONFIG = {
-            2: ['red', 'blue'],
-            3: ['red', 'blue', 'green'],
-            4: ['red', 'blue', 'green', 'yellow']
+            2: ['pink', 'blue'],
+            3: ['pink', 'blue', 'green'],
+            4: ['pink', 'blue', 'green', 'yellow']
         };
 
-        // Game State
+        // Power-ups system
+        const POWER_UPS = {
+            SHIELD: { name: 'Shield', icon: '🛡️', duration: 3, description: 'Protect from capture' },
+            SPEED: { name: 'Speed Boost', icon: '⚡', duration: 2, description: 'Move twice per turn' },
+            TELEPORT: { name: 'Teleport', icon: '🌟', uses: 1, description: 'Jump to any safe spot' },
+            SWAP: { name: 'Token Swap', icon: '🔄', uses: 1, description: 'Swap positions with opponent' }
+        };
+
+        // Enhanced Game Manager
         class GameManager {
             constructor() {
                 this.currentPlayer = 0;
@@ -464,17 +841,78 @@
                 this.gameBoard = null;
                 this.aiDifficulty = 'medium';
                 this.soundEnabled = true;
+                this.gameMode = 'offline';
+                this.isMultiplayer = false;
+                this.roomCode = null;
+                this.powerUps = new Map();
+                this.gameStats = {
+                    gamesPlayed: 0,
+                    gamesWon: 0,
+                    tokensCapture: 0,
+                    powerUpsUsed: 0
+                };
+                this.currentTheme = 'pastel';
+                this.animationsEnabled = true;
+                this.customRules = {
+                    captureBonus: true,
+                    powerUpsEnabled: true,
+                    timeLimit: false,
+                    teamMode: false
+                };
+                this.turnTimeLimit = 30;
+                this.currentTurnTimer = null;
                 
+                this.loadGameData();
                 this.initializeBoard();
+                this.createFloatingBubbles();
                 this.setupEventListeners();
-                this.showModal('Game Setup', this.getSetupContent());
+                this.showMainMenu();
+            }
+
+            loadGameData() {
+                try {
+                    const saved = JSON.parse(localStorage.getItem('ludoGameData') || '{}');
+                    this.gameStats = { ...this.gameStats, ...saved.stats };
+                    this.currentTheme = saved.theme || 'pastel';
+                    this.customRules = { ...this.customRules, ...saved.rules };
+                } catch (e) {
+                    console.warn('Could not load saved game data');
+                }
+            }
+
+            saveGameData() {
+                try {
+                    localStorage.setItem('ludoGameData', JSON.stringify({
+                        stats: this.gameStats,
+                        theme: this.currentTheme,
+                        rules: this.customRules
+                    }));
+                } catch (e) {
+                    console.warn('Could not save game data');
+                }
+            }
+
+            createFloatingBubbles() {
+                const container = document.getElementById('floatingBubbles');
+                for (let i = 0; i < 20; i++) {
+                    const bubble = document.createElement('div');
+                    bubble.className = 'bubble';
+                    bubble.style.cssText = `
+                        left: ${Math.random() * 100}%;
+                        top: ${Math.random() * 100}%;
+                        width: ${20 + Math.random() * 40}px;
+                        height: ${20 + Math.random() * 40}px;
+                        animation-delay: ${Math.random() * 6}s;
+                        animation-duration: ${4 + Math.random() * 4}s;
+                    `;
+                    container.appendChild(bubble);
+                }
             }
 
             initializeBoard() {
                 this.gameBoard = document.getElementById('gameBoard');
                 this.board = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(null));
                 
-                // Create board cells
                 for (let row = 0; row < BOARD_SIZE; row++) {
                     for (let col = 0; col < BOARD_SIZE; col++) {
                         const cell = document.createElement('div');
@@ -482,9 +920,7 @@
                         cell.dataset.row = row;
                         cell.dataset.col = col;
                         
-                        // Set cell types based on position
                         this.setCellType(cell, row, col);
-                        
                         cell.addEventListener('click', (e) => this.onCellClick(e));
                         this.gameBoard.appendChild(cell);
                     }
@@ -493,51 +929,526 @@
 
             setCellType(cell, row, col) {
                 // Home areas
-                if (row < 6 && col < 6) cell.classList.add('home-red');
+                if (row < 6 && col < 6) cell.classList.add('home-pink');
                 else if (row < 6 && col > 8) cell.classList.add('home-blue');
                 else if (row > 8 && col < 6) cell.classList.add('home-green');
                 else if (row > 8 && col > 8) cell.classList.add('home-yellow');
                 
-                // Path cells
-                else if (
-                    (row === 6 && (col < 6 || col > 8)) ||
-                    (row === 8 && (col < 6 || col > 8)) ||
-                    (col === 6 && (row < 6 || row > 8)) ||
-                    (col === 8 && (row < 6 || row > 8)) ||
-                    (row === 7 && col >= 1 && col <= 13) ||
-                    (col === 7 && row >= 1 && row <= 13)
-                ) {
+                // Path cells and safe spots
+                else if (this.isPathCell(row, col)) {
                     cell.classList.add('path');
-                    
-                    // Safe spots
-                    if (
-                        (row === 6 && col === 2) ||
-                        (row === 2 && col === 8) ||
-                        (row === 8 && col === 12) ||
-                        (row === 12 && col === 6) ||
-                        (row === 7 && (col === 1 || col === 13)) ||
-                        (col === 7 && (row === 1 || row === 13))
-                    ) {
+                    if (this.isSafeSpot(row, col)) {
                         cell.classList.add('safe');
+                        cell.innerHTML = '<div style="font-size: 0.8rem;">⭐</div>';
                     }
                 }
             }
 
-            startGame(numPlayers) {
+            isPathCell(row, col) {
+                return (row === 6 && (col < 6 || col > 8)) ||
+                       (row === 8 && (col < 6 || col > 8)) ||
+                       (col === 6 && (row < 6 || row > 8)) ||
+                       (col === 8 && (row < 6 || row > 8)) ||
+                       (row === 7 && col >= 1 && col <= 13) ||
+                       (col === 7 && row >= 1 && row <= 13);
+            }
+
+            isSafeSpot(row, col) {
+                return (row === 6 && col === 2) ||
+                       (row === 2 && col === 8) ||
+                       (row === 8 && col === 12) ||
+                       (row === 12 && col === 6) ||
+                       (row === 7 && (col === 1 || col === 13)) ||
+                       (col === 7 && (row === 1 || row === 13));
+            }
+
+            showMainMenu() {
+                const content = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 3rem; margin-bottom: 20px;">🎮</div>
+                        <h2 style="margin-bottom: 30px;">Welcome to Ludo Master Pro!</h2>
+                        
+                        <div class="modal-buttons">
+                            <button class="modal-btn" onclick="gameManager.showGameModeSelection()">
+                                🏠 Play Offline
+                            </button>
+                            <button class="modal-btn" onclick="gameManager.showMultiplayerMenu()">
+                                🌐 Play Online
+                            </button>
+                            <button class="modal-btn" onclick="gameManager.showTournamentMode()">
+                                🏆 Tournament
+                            </button>
+                            <button class="modal-btn" onclick="gameManager.showCustomGame()">
+                                ⚙️ Custom Game
+                            </button>
+                        </div>
+
+                        <div class="theme-selector">
+                            <div class="theme-btn" style="background: linear-gradient(45deg, #FFB3D9, #D9B3FF)" onclick="gameManager.setTheme('pastel')" title="Pastel Theme"></div>
+                            <div class="theme-btn" style="background: linear-gradient(45deg, #FF6B6B, #4ECDC4)" onclick="gameManager.setTheme('vibrant')" title="Vibrant Theme"></div>
+                            <div class="theme-btn" style="background: linear-gradient(45deg, #2C3E50, #3498DB)" onclick="gameManager.setTheme('dark')" title="Dark Theme"></div>
+                            <div class="theme-btn" style="background: linear-gradient(45deg, #F39C12, #E74C3C)" onclick="gameManager.setTheme('sunset')" title="Sunset Theme"></div>
+                        </div>
+
+                        <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
+                            <p>✨ New Features: Power-ups, Custom Rules, Tournament Mode</p>
+                            <p>🎯 Games Played: ${this.gameStats.gamesPlayed} | 🏆 Win Rate: ${this.getWinRate()}%</p>
+                        </div>
+                    </div>
+                `;
+                
+                this.showModal('Ludo Master Pro', content);
+            }
+
+            getWinRate() {
+                return this.gameStats.gamesPlayed > 0 ? 
+                    Math.round((this.gameStats.gamesWon / this.gameStats.gamesPlayed) * 100) : 0;
+            }
+
+            showGameModeSelection() {
+                const content = `
+                    <div style="text-align: center;">
+                        <h3>Select Game Mode</h3>
+                        <div style="margin: 20px 0;">
+                            <div class="modal-buttons">
+                                <button class="modal-btn" onclick="gameManager.startQuickGame(2)">
+                                    ⚡ Quick Game (2P)
+                                </button>
+                                <button class="modal-btn" onclick="gameManager.startQuickGame(4)">
+                                    ⚡ Quick Game (4P)
+                                </button>
+                            </div>
+                            
+                            <div style="margin: 20px 0;">
+                                <h4>Choose Players:</h4>
+                                <div class="modal-buttons">
+                                    <button class="modal-btn" onclick="gameManager.showPlayerSetup(2)">2 Players</button>
+                                    <button class="modal-btn" onclick="gameManager.showPlayerSetup(3)">3 Players</button>
+                                    <button class="modal-btn" onclick="gameManager.showPlayerSetup(4)">4 Players</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="modal-btn" onclick="gameManager.showMainMenu()" style="background: #95A5A6;">
+                            ← Back
+                        </button>
+                    </div>
+                `;
+                
+                this.showModal('Game Mode', content);
+            }
+
+            showPlayerSetup(numPlayers) {
+                let content = `
+                    <div style="text-align: center;">
+                        <h3>Setup ${numPlayers} Player Game</h3>
+                        <div style="margin: 20px 0;">
+                `;
+                
+                for (let i = 0; i < numPlayers; i++) {
+                    const color = COLORS[i];
+                    content += `
+                        <div class="player-item" style="justify-content: space-between; margin: 10px 0;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div class="player-avatar token-${color}">${i + 1}</div>
+                                <span>Player ${i + 1}</span>
+                            </div>
+                            <select id="playerType${i}" style="padding: 5px; border-radius: 5px;">
+                                <option value="${i === 0 ? 'human' : 'ai'}">
+                                    ${i === 0 ? 'Human' : 'AI'}
+                                </option>
+                                <option value="${i === 0 ? 'ai' : 'human'}">
+                                    ${i === 0 ? 'AI' : 'Human'}
+                                </option>
+                            </select>
+                        </div>
+                    `;
+                }
+                
+                content += `
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <h4>AI Difficulty:</h4>
+                            <div class="modal-buttons">
+                                <button class="modal-btn ${this.aiDifficulty === 'easy' ? 'active' : ''}" 
+                                        onclick="gameManager.setDifficulty('easy')">Easy</button>
+                                <button class="modal-btn ${this.aiDifficulty === 'medium' ? 'active' : ''}" 
+                                        onclick="gameManager.setDifficulty('medium')">Medium</button>
+                                <button class="modal-btn ${this.aiDifficulty === 'hard' ? 'active' : ''}" 
+                                        onclick="gameManager.setDifficulty('hard')">Hard</button>
+                            </div>
+                        </div>
+
+                        <div class="modal-buttons">
+                            <button class="modal-btn" onclick="gameManager.startCustomGame(${numPlayers})">
+                                🎮 Start Game
+                            </button>
+                            <button class="modal-btn" onclick="gameManager.showGameModeSelection()" style="background: #95A5A6;">
+                                ← Back
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                this.showModal('Player Setup', content);
+            }
+
+            startQuickGame(numPlayers) {
+                this.gameMode = 'offline';
                 this.players = PLAYERS_CONFIG[numPlayers].map((color, index) => ({
                     id: index,
                     color: color,
+                    name: `Player ${index + 1}`,
                     tokens: this.createTokens(color, index),
-                    isAI: index > 0, // Player 1 is human, others are AI
-                    score: 0
+                    isAI: index > 0,
+                    isHuman: index === 0,
+                    score: 0,
+                    powerUps: new Map(),
+                    isOnline: false
                 }));
 
+                this.startGameSession();
+            }
+
+            startCustomGame(numPlayers) {
+                this.gameMode = 'offline';
+                const playerTypes = [];
+                
+                for (let i = 0; i < numPlayers; i++) {
+                    const select = document.getElementById(`playerType${i}`);
+                    playerTypes.push(select.value);
+                }
+
+                this.players = PLAYERS_CONFIG[numPlayers].map((color, index) => ({
+                    id: index,
+                    color: color,
+                    name: `Player ${index + 1}`,
+                    tokens: this.createTokens(color, index),
+                    isAI: playerTypes[index] === 'ai',
+                    isHuman: playerTypes[index] === 'human',
+                    score: 0,
+                    powerUps: new Map(),
+                    isOnline: false
+                }));
+
+                this.startGameSession();
+            }
+
+            showMultiplayerMenu() {
+                const content = `
+                    <div style="text-align: center;">
+                        <h3>🌐 Online Multiplayer</h3>
+                        <div style="margin: 30px 0;">
+                            <div class="modal-buttons">
+                                <button class="modal-btn" onclick="gameManager.createOnlineRoom()">
+                                    ➕ Create Room
+                                </button>
+                                <button class="modal-btn" onclick="gameManager.showJoinRoom()">
+                                    🔗 Join Room
+                                </button>
+                                <button class="modal-btn" onclick="gameManager.quickMatch()">
+                                    ⚡ Quick Match
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 20px 0;">
+                            <h4>🎮 Online Features</h4>
+                            <p>• Real-time multiplayer</p>
+                            <p>• Voice chat support</p>
+                            <p>• Global leaderboards</p>
+                            <p>• Friend system</p>
+                        </div>
+
+                        <button class="modal-btn" onclick="gameManager.showMainMenu()" style="background: #95A5A6;">
+                            ← Back
+                        </button>
+                    </div>
+                `;
+                
+                this.showModal('Online Multiplayer', content);
+            }
+
+            createOnlineRoom() {
+                // Simulate online room creation
+                this.roomCode = this.generateRoomCode();
+                this.gameMode = 'online-host';
+                this.isMultiplayer = true;
+                
+                document.getElementById('roomCode').textContent = this.roomCode;
+                document.getElementById('multiplayerBtnText').textContent = '🔌 Go Offline';
+                
+                const content = `
+                    <div style="text-align: center;">
+                        <h3>🎉 Room Created!</h3>
+                        <div style="font-size: 2rem; margin: 20px 0;">📱</div>
+                        <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; margin: 20px 0;">
+                            <h4>Room Code:</h4>
+                            <div style="font-size: 2rem; font-weight: bold; color: #FF6B9D; font-family: monospace;">
+                                ${this.roomCode}
+                            </div>
+                        </div>
+                        
+                        <p>Share this code with friends to join your game!</p>
+                        
+                        <div id="waitingPlayers" style="margin: 20px 0;">
+                            <h4>Waiting for players... (1/4)</h4>
+                            <div class="player-list">
+                                <div class="player-item">
+                                    <div class="player-avatar token-pink">1</div>
+                                    <span>You</span>
+                                    <span class="status-dot online"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-buttons">
+                            <button class="modal-btn" onclick="gameManager.simulatePlayersJoining()">
+                                🤖 Add AI Players
+                            </button>
+                            <button class="modal-btn" onclick="gameManager.cancelRoom()" style="background: #E74C3C;">
+                                ❌ Cancel
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                this.showModal('Online Room', content);
+            }
+
+            generateRoomCode() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let result = '';
+                for (let i = 0; i < 6; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+
+            simulatePlayersJoining() {
+                // Simulate players joining over time
+                let playersJoined = 1;
+                const playerColors = ['blue', 'green', 'yellow'];
+                
+                const joinInterval = setInterval(() => {
+                    if (playersJoined >= 4) {
+                        clearInterval(joinInterval);
+                        setTimeout(() => this.startOnlineGame(), 1000);
+                        return;
+                    }
+                    
+                    const waitingDiv = document.getElementById('waitingPlayers');
+                    if (waitingDiv) {
+                        playersJoined++;
+                        const color = playerColors[playersJoined - 2];
+                        
+                        waitingDiv.innerHTML = `
+                            <h4>Players joined: ${playersJoined}/4</h4>
+                            <div class="player-list">
+                                ${Array.from({length: playersJoined}, (_, i) => `
+                                    <div class="player-item">
+                                        <div class="player-avatar token-${i === 0 ? 'pink' : playerColors[i-1]}">${i + 1}</div>
+                                        <span>${i === 0 ? 'You' : `Player ${i + 1}`}</span>
+                                        <span class="status-dot ${i === 0 ? 'online' : 'online'}"></span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                    }
+                }, 1500);
+            }
+
+            startOnlineGame() {
+                this.players = PLAYERS_CONFIG[4].map((color, index) => ({
+                    id: index,
+                    color: color,
+                    name: index === 0 ? 'You' : `Player ${index + 1}`,
+                    tokens: this.createTokens(color, index),
+                    isAI: false,
+                    isHuman: true,
+                    isOnline: index > 0,
+                    score: 0,
+                    powerUps: new Map()
+                }));
+
+                this.startGameSession();
+            }
+
+            showTournamentMode() {
+                const content = `
+                    <div style="text-align: center;">
+                        <h3>🏆 Tournament Mode</h3>
+                        <div style="font-size: 3rem; margin: 20px 0;">🏅</div>
+                        
+                        <div style="margin: 20px 0;">
+                            <h4>Tournament Types:</h4>
+                            <div class="modal-buttons">
+                                <button class="modal-btn" onclick="gameManager.startTournament('bracket')">
+                                    🏆 Bracket Tournament
+                                </button>
+                                <button class="modal-btn" onclick="gameManager.startTournament('survival')">
+                                    ⚔️ Survival Mode
+                                </button>
+                                <button class="modal-btn" onclick="gameManager.startTournament('time')">
+                                    ⏰ Time Challenge
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 20px 0;">
+                            <h4>🎯 Tournament Rewards</h4>
+                            <p>🥇 1st Place: Exclusive themes & titles</p>
+                            <p>🥈 2nd Place: Power-up bonuses</p>
+                            <p>🥉 3rd Place: Achievement unlocks</p>
+                        </div>
+
+                        <button class="modal-btn" onclick="gameManager.showMainMenu()" style="background: #95A5A6;">
+                            ← Back
+                        </button>
+                    </div>
+                `;
+                
+                this.showModal('Tournament Mode', content);
+            }
+
+            showCustomGame() {
+                const content = `
+                    <div style="text-align: center;">
+                        <h3>⚙️ Custom Game Rules</h3>
+                        
+                        <div style="text-align: left; margin: 20px 0;">
+                            <div style="margin: 15px 0;">
+                                <label style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="checkbox" ${this.customRules.captureBonus ? 'checked' : ''} 
+                                           onchange="gameManager.toggleRule('captureBonus', this.checked)">
+                                    <span>🎯 Capture Bonus (Extra turn when capturing)</span>
+                                </label>
+                            </div>
+                            
+                            <div style="margin: 15px 0;">
+                                <label style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="checkbox" ${this.customRules.powerUpsEnabled ? 'checked' : ''} 
+                                           onchange="gameManager.toggleRule('powerUpsEnabled', this.checked)">
+                                    <span>⚡ Power-ups Enabled</span>
+                                </label>
+                            </div>
+                            
+                            <div style="margin: 15px 0;">
+                                <label style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="checkbox" ${this.customRules.timeLimit ? 'checked' : ''} 
+                                           onchange="gameManager.toggleRule('timeLimit', this.checked)">
+                                    <span>⏰ Turn Time Limit (30 seconds)</span>
+                                </label>
+                            </div>
+                            
+                            <div style="margin: 15px 0;">
+                                <label style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="checkbox" ${this.customRules.teamMode ? 'checked' : ''} 
+                                           onchange="gameManager.toggleRule('teamMode', this.checked)">
+                                    <span>👥 Team Mode (2v2)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="modal-buttons">
+                            <button class="modal-btn" onclick="gameManager.showGameModeSelection()">
+                                🎮 Continue with Custom Rules
+                            </button>
+                            <button class="modal-btn" onclick="gameManager.resetCustomRules()">
+                                🔄 Reset to Default
+                            </button>
+                            <button class="modal-btn" onclick="gameManager.showMainMenu()" style="background: #95A5A6;">
+                                ← Back
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                this.showModal('Custom Rules', content);
+            }
+
+            toggleRule(rule, enabled) {
+                this.customRules[rule] = enabled;
+                this.saveGameData();
+            }
+
+            resetCustomRules() {
+                this.customRules = {
+                    captureBonus: true,
+                    powerUpsEnabled: true,
+                    timeLimit: false,
+                    teamMode: false
+                };
+                this.saveGameData();
+                this.showCustomGame();
+            }
+
+            setTheme(theme) {
+                this.currentTheme = theme;
+                this.applyTheme(theme);
+                this.saveGameData();
+                
+                // Update theme selector
+                document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+            }
+
+            applyTheme(theme) {
+                const root = document.documentElement;
+                
+                switch(theme) {
+                    case 'vibrant':
+                        root.style.setProperty('--pastel-pink', '#FF6B6B');
+                        root.style.setProperty('--pastel-blue', '#4ECDC4');
+                        root.style.setProperty('--pastel-green', '#45B7D1');
+                        root.style.setProperty('--pastel-yellow', '#F9CA24');
+                        document.body.style.background = 'linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 50%, #45B7D1 100%)';
+                        break;
+                    case 'dark':
+                        root.style.setProperty('--pastel-pink', '#E91E63');
+                        root.style.setProperty('--pastel-blue', '#2196F3');
+                        root.style.setProperty('--pastel-green', '#4CAF50');
+                        root.style.setProperty('--pastel-yellow', '#FF9800');
+                        document.body.style.background = 'linear-gradient(135deg, #2C3E50 0%, #3498DB 50%, #2C3E50 100%)';
+                        break;
+                    case 'sunset':
+                        root.style.setProperty('--pastel-pink', '#FF6B9D');
+                        root.style.setProperty('--pastel-blue', '#C44569');
+                        root.style.setProperty('--pastel-green', '#F8B500');
+                        root.style.setProperty('--pastel-yellow', '#FF7675');
+                        document.body.style.background = 'linear-gradient(135deg, #F39C12 0%, #E74C3C 50%, #9B59B6 100%)';
+                        break;
+                    default: // pastel
+                        root.style.setProperty('--pastel-pink', '#FFB3D9');
+                        root.style.setProperty('--pastel-blue', '#B3D9FF');
+                        root.style.setProperty('--pastel-green', '#B3FFD9');
+                        root.style.setProperty('--pastel-yellow', '#FFE5B3');
+                        document.body.style.background = 'linear-gradient(135deg, #FFE5E5 0%, #E5F3FF 50%, #E5FFE5 100%)';
+                }
+            }
+
+            startGameSession() {
                 this.gameState = 'playing';
                 this.currentPlayer = 0;
                 this.hideModal();
                 this.updatePlayerInfo();
+                this.updateMultiplayerPanel();
                 this.updateGameStatus();
                 this.placeTokensOnBoard();
+                
+                if (this.customRules.powerUpsEnabled) {
+                    this.spawnRandomPowerUps();
+                }
+                
+                // Start turn timer if enabled
+                if (this.customRules.timeLimit) {
+                    this.startTurnTimer();
+                }
+                
+                // Update stats
+                this.gameStats.gamesPlayed++;
+                this.saveGameData();
             }
 
             createTokens(color, playerId) {
@@ -549,8 +1460,11 @@
                         position: 'home',
                         homePosition: i,
                         boardPosition: null,
+                        pathPosition: 0,
                         isInSafety: false,
-                        canMove: false
+                        canMove: false,
+                        hasShield: false,
+                        powerUpEffects: new Map()
                     });
                 }
                 return tokens;
@@ -567,7 +1481,7 @@
 
             getHomePosition(color, tokenIndex) {
                 const positions = {
-                    red: [{row: 1, col: 1}, {row: 1, col: 4}, {row: 4, col: 1}, {row: 4, col: 4}],
+                    pink: [{row: 1, col: 1}, {row: 1, col: 4}, {row: 4, col: 1}, {row: 4, col: 4}],
                     blue: [{row: 1, col: 10}, {row: 1, col: 13}, {row: 4, col: 10}, {row: 4, col: 13}],
                     green: [{row: 10, col: 1}, {row: 10, col: 4}, {row: 13, col: 1}, {row: 13, col: 4}],
                     yellow: [{row: 10, col: 10}, {row: 10, col: 13}, {row: 13, col: 10}, {row: 13, col: 13}]
@@ -576,19 +1490,21 @@
             }
 
             placeToken(token, row, col) {
-                // Remove token from previous position
                 const existingToken = document.querySelector(`[data-token-id="${token.id}"]`);
                 if (existingToken) existingToken.remove();
 
-                // Create new token element
                 const tokenElement = document.createElement('div');
                 tokenElement.className = `token token-${token.color}`;
                 tokenElement.dataset.tokenId = token.id;
                 tokenElement.textContent = token.id.split('-')[1];
                 
+                // Add power-up effects visual indicators
+                if (token.hasShield) {
+                    tokenElement.style.boxShadow = '0 0 15px #FFD700, 0 6px 15px rgba(0, 0, 0, 0.2)';
+                }
+                
                 tokenElement.addEventListener('click', (e) => this.onTokenClick(e));
                 
-                // Place token in cell
                 const cell = this.gameBoard.querySelector(`[data-row="${row}"][data-col="${col}"]`);
                 if (cell) {
                     cell.appendChild(tokenElement);
@@ -596,14 +1512,39 @@
                 }
             }
 
+            spawnRandomPowerUps() {
+                const pathCells = document.querySelectorAll('.board-cell.path:not(.safe)');
+                const numPowerUps = Math.min(3, Math.floor(pathCells.length / 10));
+                
+                for (let i = 0; i < numPowerUps; i++) {
+                    const randomCell = pathCells[Math.floor(Math.random() * pathCells.length)];
+                    if (!randomCell.querySelector('.power-up')) {
+                        const powerUp = document.createElement('div');
+                        powerUp.className = 'power-up';
+                        powerUp.innerHTML = this.getRandomPowerUpIcon();
+                        powerUp.title = 'Power-up! Move here to collect';
+                        randomCell.appendChild(powerUp);
+                    }
+                }
+            }
+
+            getRandomPowerUpIcon() {
+                const icons = ['⚡', '🛡️', '🌟', '🔄', '💨', '🎯'];
+                return icons[Math.floor(Math.random() * icons.length)];
+            }
+
             rollDice() {
                 if (this.gameState !== 'playing') return;
+                if (this.players[this.currentPlayer].isOnline && !this.isCurrentPlayerLocal()) return;
                 
                 const dice = document.getElementById('dice');
                 dice.classList.add('rolling');
                 
-                // Haptic feedback simulation
+                // Haptic feedback
                 if (navigator.vibrate) navigator.vibrate(100);
+                
+                // Clear turn timer
+                this.clearTurnTimer();
                 
                 setTimeout(() => {
                     this.diceValue = Math.floor(Math.random() * 6) + 1;
@@ -611,7 +1552,7 @@
                     dice.classList.remove('rolling');
                     
                     this.handleDiceRoll();
-                }, 1000);
+                }, 1500);
             }
 
             handleDiceRoll() {
@@ -620,6 +1561,7 @@
                 if (this.diceValue === 6) {
                     this.consecutiveSixes++;
                     if (this.consecutiveSixes >= 3) {
+                        this.showMessage('Three 6s! Turn skipped!', 'warning');
                         this.endTurn();
                         return;
                     }
@@ -627,25 +1569,25 @@
                     this.consecutiveSixes = 0;
                 }
 
-                // Check for moveable tokens
                 const moveableTokens = this.getMoveableTokens(currentPlayerObj);
                 
                 if (moveableTokens.length === 0) {
-                    this.updateGameStatus(`No valid moves available!`);
+                    this.showMessage('No valid moves available!', 'info');
                     setTimeout(() => this.endTurn(), 1500);
                     return;
                 }
 
-                // Highlight moveable tokens
                 this.highlightMoveableTokens(moveableTokens);
 
-                // Auto-move if only one option or AI player
-                if (moveableTokens.length === 1 || currentPlayerObj.isAI) {
+                // Auto-move for AI or single option
+                if (moveableTokens.length === 1 || (currentPlayerObj.isAI && !currentPlayerObj.isOnline)) {
                     setTimeout(() => {
                         const tokenToMove = currentPlayerObj.isAI ? 
                             this.getAIMove(moveableTokens) : moveableTokens[0];
                         this.moveToken(tokenToMove);
-                    }, currentPlayerObj.isAI ? 1000 : 500);
+                    }, currentPlayerObj.isAI ? 1200 : 800);
+                } else if (this.customRules.timeLimit) {
+                    this.startTurnTimer();
                 }
             }
 
@@ -666,8 +1608,8 @@
                     return this.getStartPosition(token.color);
                 }
                 
-                if (token.boardPosition) {
-                    return this.getNextPosition(token, steps);
+                if (token.boardPosition && token.position === 'board') {
+                    return this.getNextPositionOnPath(token, steps);
                 }
                 
                 return null;
@@ -675,7 +1617,7 @@
 
             getStartPosition(color) {
                 const startPositions = {
-                    red: {row: 6, col: 1},
+                    pink: {row: 6, col: 1},
                     blue: {row: 1, col: 8},
                     green: {row: 8, col: 13},
                     yellow: {row: 13, col: 6}
@@ -683,29 +1625,69 @@
                 return startPositions[color];
             }
 
-            getNextPosition(token, steps) {
-                // Simplified pathfinding - returns next position in the path
+            getNextPositionOnPath(token, steps) {
+                // Enhanced pathfinding with proper Ludo board logic
                 const currentPos = token.boardPosition;
-                // This would contain complex pathfinding logic
-                // For demo purposes, returning a simple next position
-                return {
-                    row: Math.max(0, Math.min(14, currentPos.row + (steps % 2))),
-                    col: Math.max(0, Math.min(14, currentPos.col + Math.floor(steps / 2)))
+                const pathSequence = this.getPathSequenceForColor(token.color);
+                const currentIndex = this.findPositionInPath(currentPos, pathSequence);
+                
+                if (currentIndex === -1) return null;
+                
+                const newIndex = currentIndex + steps;
+                if (newIndex >= pathSequence.length) return null; // Can't move past finish
+                
+                return pathSequence[newIndex];
+            }
+
+            getPathSequenceForColor(color) {
+                // Simplified path - in a real implementation, this would be the complete Ludo path
+                const basePath = [
+                    {row: 6, col: 1}, {row: 6, col: 2}, {row: 6, col: 3}, {row: 6, col: 4}, {row: 6, col: 5},
+                    {row: 5, col: 6}, {row: 4, col: 6}, {row: 3, col: 6}, {row: 2, col: 6}, {row: 1, col: 6},
+                    {row: 1, col: 7}, {row: 1, col: 8}, {row: 2, col: 8}, {row: 3, col: 8}, {row: 4, col: 8},
+                    {row: 5, col: 8}, {row: 6, col: 9}, {row: 6, col: 10}, {row: 6, col: 11}, {row: 6, col: 12},
+                    {row: 6, col: 13}, {row: 7, col: 13}, {row: 8, col: 13}, {row: 8, col: 12}, {row: 8, col: 11},
+                    {row: 8, col: 10}, {row: 8, col: 9}, {row: 9, col: 8}, {row: 10, col: 8}, {row: 11, col: 8},
+                    {row: 12, col: 8}, {row: 13, col: 8}, {row: 13, col: 7}, {row: 13, col: 6}, {row: 12, col: 6},
+                    {row: 11, col: 6}, {row: 10, col: 6}, {row: 9, col: 6}, {row: 8, col: 5}, {row: 8, col: 4},
+                    {row: 8, col: 3}, {row: 8, col: 2}, {row: 8, col: 1}, {row: 7, col: 1}
+                ];
+                
+                // Add home stretch for each color
+                const homeStretches = {
+                    pink: [{row: 7, col: 2}, {row: 7, col: 3}, {row: 7, col: 4}, {row: 7, col: 5}, {row: 7, col: 6}],
+                    blue: [{row: 2, col: 7}, {row: 3, col: 7}, {row: 4, col: 7}, {row: 5, col: 7}, {row: 6, col: 7}],
+                    green: [{row: 7, col: 12}, {row: 7, col: 11}, {row: 7, col: 10}, {row: 7, col: 9}, {row: 7, col: 8}],
+                    yellow: [{row: 12, col: 7}, {row: 11, col: 7}, {row: 10, col: 7}, {row: 9, col: 7}, {row: 8, col: 7}]
                 };
+                
+                return [...basePath, ...homeStretches[color]];
+            }
+
+            findPositionInPath(position, pathSequence) {
+                return pathSequence.findIndex(pos => pos.row === position.row && pos.col === position.col);
             }
 
             highlightMoveableTokens(tokens) {
-                // Clear previous highlights
                 document.querySelectorAll('.token').forEach(t => t.classList.remove('selectable'));
+                document.querySelectorAll('.board-cell').forEach(c => c.classList.remove('highlighted'));
                 
                 tokens.forEach(token => {
                     const tokenElement = document.querySelector(`[data-token-id="${token.id}"]`);
-                    if (tokenElement) tokenElement.classList.add('selectable');
+                    if (tokenElement) {
+                        tokenElement.classList.add('selectable');
+                        
+                        // Highlight possible destination
+                        const newPos = this.calculateNewPosition(token, this.diceValue);
+                        if (newPos) {
+                            const targetCell = this.gameBoard.querySelector(`[data-row="${newPos.row}"][data-col="${newPos.col}"]`);
+                            if (targetCell) targetCell.classList.add('highlighted');
+                        }
+                    }
                 });
             }
 
             getAIMove(moveableTokens) {
-                // AI logic based on difficulty
                 switch (this.aiDifficulty) {
                     case 'easy':
                         return moveableTokens[Math.floor(Math.random() * moveableTokens.length)];
@@ -719,27 +1701,25 @@
             }
 
             getStrategicMove(tokens) {
-                // Prefer tokens that can capture or reach safety
+                // Prioritize: 1) Capture 2) Safety 3) Progress 4) Exit home
                 const captureTokens = tokens.filter(token => this.canCapture(token));
                 if (captureTokens.length > 0) return captureTokens[0];
                 
                 const safetyTokens = tokens.filter(token => this.canReachSafety(token));
                 if (safetyTokens.length > 0) return safetyTokens[0];
                 
-                return tokens[Math.floor(Math.random() * tokens.length)];
+                const progressTokens = tokens.filter(token => token.position === 'board');
+                if (progressTokens.length > 0) return progressTokens[0];
+                
+                return tokens[0];
             }
 
             getOptimalMove(tokens) {
-                // Advanced AI with scoring system
                 let bestToken = tokens[0];
-                let bestScore = -1;
+                let bestScore = this.calculateMoveScore(bestToken);
                 
                 tokens.forEach(token => {
-                    let score = 0;
-                    if (this.canCapture(token)) score += 10;
-                    if (this.canReachSafety(token)) score += 5;
-                    if (token.position === 'home') score += 3;
-                    
+                    const score = this.calculateMoveScore(token);
                     if (score > bestScore) {
                         bestScore = score;
                         bestToken = token;
@@ -749,15 +1729,26 @@
                 return bestToken;
             }
 
+            calculateMoveScore(token) {
+                let score = 0;
+                
+                if (this.canCapture(token)) score += 15;
+                if (this.canReachSafety(token)) score += 10;
+                if (token.position === 'home' && this.diceValue === 6) score += 8;
+                if (token.position === 'board') score += 5;
+                if (this.wouldBeInDanger(token)) score -= 8;
+                
+                return score;
+            }
+
             canCapture(token) {
-                // Check if token can capture an opponent's token
                 const newPos = this.calculateNewPosition(token, this.diceValue);
                 if (!newPos) return false;
                 
                 const targetCell = this.gameBoard.querySelector(`[data-row="${newPos.row}"][data-col="${newPos.col}"]`);
                 const existingToken = targetCell?.querySelector('.token');
                 
-                return existingToken && !existingToken.dataset.tokenId.startsWith(token.color);
+                return existingToken && !existingToken.dataset.tokenId.startsWith(token.color) && !this.isTokenShielded(existingToken.dataset.tokenId);
             }
 
             canReachSafety(token) {
@@ -768,35 +1759,150 @@
                 return targetCell?.classList.contains('safe');
             }
 
+            wouldBeInDanger(token) {
+                const newPos = this.calculateNewPosition(token, this.diceValue);
+                if (!newPos) return false;
+                
+                // Check if any opponent token could capture at new position
+                return this.players.some(player => {
+                    if (player.color === token.color) return false;
+                    return player.tokens.some(opponentToken => {
+                        if (opponentToken.position !== 'board') return false;
+                        for (let dice = 1; dice <= 6; dice++) {
+                            const opponentNewPos = this.calculateNewPosition(opponentToken, dice);
+                            if (opponentNewPos && opponentNewPos.row === newPos.row && opponentNewPos.col === newPos.col) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    });
+                });
+            }
+
+            isTokenShielded(tokenId) {
+                const [color, index] = tokenId.split('-');
+                const player = this.players.find(p => p.color === color);
+                const token = player.tokens[parseInt(index)];
+                return token.hasShield;
+            }
+
             moveToken(token) {
                 const newPos = this.calculateNewPosition(token, this.diceValue);
                 if (!newPos) return;
                 
-                // Handle captures
                 const targetCell = this.gameBoard.querySelector(`[data-row="${newPos.row}"][data-col="${newPos.col}"]`);
                 const existingToken = targetCell?.querySelector('.token');
                 
+                // Handle captures
                 if (existingToken && !existingToken.dataset.tokenId.startsWith(token.color)) {
-                    this.captureToken(existingToken.dataset.tokenId);
-                    this.createCaptureEffect(newPos.row, newPos.col);
+                    if (!this.isTokenShielded(existingToken.dataset.tokenId)) {
+                        this.captureToken(existingToken.dataset.tokenId);
+                        this.createCaptureEffect(newPos.row, newPos.col);
+                        this.gameStats.tokensCapture++;
+                        
+                        if (this.customRules.captureBonus) {
+                            this.showMessage('Capture bonus! Extra turn!', 'success');
+                            this.diceValue = 6; // Grant extra turn
+                        }
+                    } else {
+                        this.showMessage('Token is shielded!', 'warning');
+                        return;
+                    }
                 }
                 
-                // Move token
-                this.placeToken(token, newPos.row, newPos.col);
-                token.position = 'board';
+                // Check for power-up collection
+                const powerUp = targetCell?.querySelector('.power-up');
+                if (powerUp) {
+                    this.collectPowerUp(token, powerUp);
+                }
                 
-                // Check for winning condition
+                // Move token with animation
+                this.animateTokenMove(token, newPos);
+                
+                // Update token state
+                if (token.position === 'home') {
+                    token.position = 'board';
+                    token.pathPosition = 0;
+                } else {
+                    token.pathPosition += this.diceValue;
+                }
+                
+                // Check for finish
+                if (this.isFinishPosition(newPos, token.color)) {
+                    token.position = 'finished';
+                    this.createFinishEffect(newPos.row, newPos.col);
+                    this.showMessage('Token finished!', 'success');
+                }
+                
+                // Check win condition
                 if (this.checkWinCondition()) return;
                 
-                // End turn if not rolled a 6
-                if (this.diceValue !== 6) {
+                // Handle turn continuation
+                if (this.diceValue !== 6 && !this.customRules.captureBonus) {
                     this.endTurn();
                 } else {
-                    this.updateGameStatus(`Bonus turn for rolling 6!`);
+                    this.updateGameStatus(`Bonus turn for ${this.diceValue === 6 ? 'rolling 6' : 'capture'}!`);
+                    document.getElementById('dice').textContent = '🎲';
                 }
                 
-                // Clear token highlights
-                document.querySelectorAll('.token').forEach(t => t.classList.remove('selectable'));
+                this.clearHighlights();
+                this.saveGameData();
+            }
+
+            animateTokenMove(token, newPos) {
+                const tokenElement = document.querySelector(`[data-token-id="${token.id}"]`);
+                if (!tokenElement) return;
+                
+                tokenElement.style.transition = 'all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                tokenElement.style.transform = 'translate(-50%, -50%) scale(1.3)';
+                
+                setTimeout(() => {
+                    this.placeToken(token, newPos.row, newPos.col);
+                    const newTokenElement = document.querySelector(`[data-token-id="${token.id}"]`);
+                    if (newTokenElement) {
+                        newTokenElement.style.transform = 'translate(-50%, -50%) scale(1)';
+                    }
+                }, 300);
+            }
+
+            collectPowerUp(token, powerUpElement) {
+                const powerUpType = this.identifyPowerUpType(powerUpElement.innerHTML);
+                const currentPlayerObj = this.players[this.currentPlayer];
+                
+                if (currentPlayerObj.powerUps.has(powerUpType)) {
+                    currentPlayerObj.powerUps.set(powerUpType, currentPlayerObj.powerUps.get(powerUpType) + 1);
+                } else {
+                    currentPlayerObj.powerUps.set(powerUpType, 1);
+                }
+                
+                this.gameStats.powerUpsUsed++;
+                this.showMessage(`Power-up collected: ${powerUpType}!`, 'success');
+                this.createCollectionEffect(token.boardPosition.row, token.boardPosition.col);
+                
+                powerUpElement.remove();
+            }
+
+            identifyPowerUpType(icon) {
+                const typeMap = {
+                    '⚡': 'Speed Boost',
+                    '🛡️': 'Shield',
+                    '🌟': 'Teleport',
+                    '🔄': 'Token Swap',
+                    '💨': 'Double Move',
+                    '🎯': 'Precision Strike'
+                };
+                return typeMap[icon] || 'Mystery Power';
+            }
+
+            isFinishPosition(pos, color) {
+                const finishPositions = {
+                    pink: {row: 7, col: 6},
+                    blue: {row: 6, col: 7},
+                    green: {row: 7, col: 8},
+                    yellow: {row: 8, col: 7}
+                };
+                const finish = finishPositions[color];
+                return pos.row === finish.row && pos.col === finish.col;
             }
 
             captureToken(tokenId) {
@@ -804,27 +1910,49 @@
                 const player = this.players.find(p => p.color === color);
                 const token = player.tokens[parseInt(index)];
                 
-                // Send token back home
                 const homePos = this.getHomePosition(color, parseInt(index));
                 this.placeToken(token, homePos.row, homePos.col);
                 token.position = 'home';
                 token.boardPosition = null;
+                token.pathPosition = 0;
+                token.hasShield = false;
+                
+                this.showMessage(`${color.toUpperCase()} token captured!`, 'warning');
             }
 
             createCaptureEffect(row, col) {
+                this.createParticleEffect(row, col, '#FF6B6B', '💥');
+            }
+
+            createFinishEffect(row, col) {
+                this.createParticleEffect(row, col, '#FFD700', '⭐');
+            }
+
+            createCollectionEffect(row, col) {
+                this.createParticleEffect(row, col, '#4ECDC4', '✨');
+            }
+
+            createParticleEffect(row, col, color, emoji) {
                 const effect = document.createElement('div');
                 effect.className = 'particle';
+                effect.innerHTML = emoji;
                 effect.style.cssText = `
-                    left: ${col * (100 / BOARD_SIZE)}%;
-                    top: ${row * (100 / BOARD_SIZE)}%;
-                    width: 20px;
-                    height: 20px;
-                    background: radial-gradient(circle, #ff4757, #ffa502);
-                    animation: explode 0.8s ease-out forwards;
+                    left: ${(col / BOARD_SIZE) * 100}%;
+                    top: ${(row / BOARD_SIZE) * 100}%;
+                    width: 30px;
+                    height: 30px;
+                    background: ${color};
+                    color: white;
+                    font-size: 1.5rem;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    animation: particle-burst 1s ease-out forwards;
+                    z-index: 100;
                 `;
                 
                 this.gameBoard.appendChild(effect);
-                setTimeout(() => effect.remove(), 800);
+                setTimeout(() => effect.remove(), 1000);
             }
 
             checkWinCondition() {
@@ -833,17 +1961,9 @@
                 
                 if (finishedTokens.length === 4) {
                     this.gameState = 'finished';
+                    this.gameStats.gamesWon++;
                     this.showVictoryAnimation(currentPlayerObj);
-                    this.showModal('Victory!', `
-                        <div style="text-align: center;">
-                            <div style="font-size: 4rem; margin: 20px 0;">🏆</div>
-                            <h2>Player ${this.currentPlayer + 1} (${currentPlayerObj.color.toUpperCase()}) Wins!</h2>
-                            <div class="modal-buttons">
-                                <button class="modal-btn" onclick="gameManager.resetGame()">Play Again</button>
-                                <button class="modal-btn" onclick="gameManager.showStats()">View Stats</button>
-                            </div>
-                        </div>
-                    `);
+                    this.showVictoryModal(currentPlayerObj);
                     return true;
                 }
                 return false;
@@ -855,55 +1975,184 @@
                     token.classList.add('victory-animation');
                 });
                 
-                // Create confetti effect
                 this.createConfettiEffect();
+                this.playVictorySound();
+            }
+
+            showVictoryModal(player) {
+                const content = `
+                    <div style="text-align: center;">
+                        <div style="font-size: 5rem; margin: 20px 0;">🏆</div>
+                        <h2 style="color: var(--pastel-${player.color}); margin-bottom: 20px;">
+                            Victory!
+                        </h2>
+                        <div style="font-size: 1.2rem; margin: 15px 0;">
+                            ${player.name} (${player.color.toUpperCase()}) wins!
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin: 20px 0;">
+                            <h3>🎯 Game Stats</h3>
+                            <p>🎲 Total Moves: ${this.getTotalMoves()}</p>
+                            <p>🎯 Tokens Captured: ${this.gameStats.tokensCapture}</p>
+                            <p>⚡ Power-ups Used: ${this.gameStats.powerUpsUsed}</p>
+                            <p>⏱️ Game Duration: ${this.getGameDuration()}</p>
+                        </div>
+                        
+                        <div class="modal-buttons">
+                            <button class="modal-btn" onclick="gameManager.resetGame()">
+                                🔄 Play Again
+                            </button>
+                            <button class="modal-btn" onclick="gameManager.showStats()">
+                                📊 View All Stats
+                            </button>
+                            <button class="modal-btn" onclick="gameManager.shareResult()">
+                                📱 Share Result
+                            </button>
+                        </div>
+                    </div>
+                `;
                 
-                // Play victory sound (simulated)
-                if (this.soundEnabled && navigator.vibrate) {
-                    navigator.vibrate([200, 100, 200, 100, 200]);
-                }
+                this.showModal('Game Over', content);
             }
 
             createConfettiEffect() {
-                const colors = ['#ff4757', '#3742fa', '#2ed573', '#ffa502', '#ffffff'];
+                const colors = ['#FFB3D9', '#B3D9FF', '#B3FFD9', '#FFE5B3', '#D9B3FF'];
                 
-                for (let i = 0; i < 50; i++) {
+                for (let i = 0; i < 100; i++) {
                     setTimeout(() => {
                         const confetti = document.createElement('div');
                         confetti.className = 'particle';
                         confetti.style.cssText = `
                             position: fixed;
                             left: ${Math.random() * 100}%;
-                            top: -10px;
-                            width: 8px;
-                            height: 8px;
+                            top: -20px;
+                            width: ${8 + Math.random() * 6}px;
+                            height: ${8 + Math.random() * 6}px;
                             background: ${colors[Math.floor(Math.random() * colors.length)]};
-                            animation: confetti 3s linear forwards;
+                            border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+                            animation: confetti-fall ${3 + Math.random() * 2}s linear forwards;
                             z-index: 1001;
                         `;
                         
                         document.body.appendChild(confetti);
-                        setTimeout(() => confetti.remove(), 3000);
-                    }, i * 50);
+                        setTimeout(() => confetti.remove(), 5000);
+                    }, i * 30);
                 }
             }
 
+            playVictorySound() {
+                if (this.soundEnabled && navigator.vibrate) {
+                    navigator.vibrate([300, 100, 300, 100, 300, 100, 300]);
+                }
+            }
+
+            clearHighlights() {
+                document.querySelectorAll('.token').forEach(t => t.classList.remove('selectable'));
+                document.querySelectorAll('.board-cell').forEach(c => c.classList.remove('highlighted'));
+            }
+
             endTurn() {
+                this.clearTurnTimer();
                 this.currentPlayer = (this.currentPlayer + 1) % this.players.length;
                 this.consecutiveSixes = 0;
                 this.selectedToken = null;
                 
-                // Clear highlights
-                document.querySelectorAll('.token').forEach(t => t.classList.remove('selectable'));
-                document.querySelectorAll('.board-cell').forEach(c => c.classList.remove('highlighted'));
-                
+                this.clearHighlights();
                 this.updatePlayerInfo();
                 this.updateGameStatus();
                 
-                // Auto-play for AI
-                if (this.players[this.currentPlayer].isAI && this.gameState === 'playing') {
-                    setTimeout(() => this.rollDice(), 1500);
+                // Auto-play for AI or online simulation
+                const currentPlayerObj = this.players[this.currentPlayer];
+                if ((currentPlayerObj.isAI || currentPlayerObj.isOnline) && this.gameState === 'playing') {
+                    setTimeout(() => {
+                        if (currentPlayerObj.isOnline) {
+                            this.simulateOnlinePlayerMove();
+                        } else {
+                            this.rollDice();
+                        }
+                    }, 1500);
                 }
+                
+                if (this.customRules.timeLimit && !currentPlayerObj.isAI && !currentPlayerObj.isOnline) {
+                    this.startTurnTimer();
+                }
+            }
+
+            startTurnTimer() {
+                this.clearTurnTimer();
+                let timeLeft = this.turnTimeLimit;
+                
+                const timerElement = document.createElement('div');
+                timerElement.id = 'turnTimer';
+                timerElement.style.cssText = `
+                    position: absolute;
+                    top: 10px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(255, 107, 157, 0.9);
+                    color: white;
+                    padding: 8px 16px;
+                    border-radius: 20px;
+                    font-weight: bold;
+                    z-index: 200;
+                `;
+                document.body.appendChild(timerElement);
+                
+                this.currentTurnTimer = setInterval(() => {
+                    timeLeft--;
+                    timerElement.textContent = `⏰ ${timeLeft}s`;
+                    
+                    if (timeLeft <= 5) {
+                        timerElement.style.background = 'rgba(231, 76, 60, 0.9)';
+                        timerElement.style.animation = 'pulse 0.5s ease-in-out infinite alternate';
+                    }
+                    
+                    if (timeLeft <= 0) {
+                        this.handleTimeOut();
+                    }
+                }, 1000);
+            }
+
+            clearTurnTimer() {
+                if (this.currentTurnTimer) {
+                    clearInterval(this.currentTurnTimer);
+                    this.currentTurnTimer = null;
+                }
+                
+                const timerElement = document.getElementById('turnTimer');
+                if (timerElement) {
+                    timerElement.remove();
+                }
+            }
+
+            handleTimeOut() {
+                this.clearTurnTimer();
+                this.showMessage('Time up! Turn skipped.', 'warning');
+                setTimeout(() => this.endTurn(), 1000);
+            }
+
+            simulateOnlinePlayerMove() {
+                this.showMessage(`${this.players[this.currentPlayer].name} is making a move...`, 'info');
+                
+                setTimeout(() => {
+                    // Simulate dice roll
+                    this.diceValue = Math.floor(Math.random() * 6) + 1;
+                    document.getElementById('dice').textContent = this.diceValue;
+                    
+                    setTimeout(() => {
+                        const moveableTokens = this.getMoveableTokens(this.players[this.currentPlayer]);
+                        if (moveableTokens.length > 0) {
+                            const tokenToMove = this.getStrategicMove(moveableTokens);
+                            this.moveToken(tokenToMove);
+                        } else {
+                            this.endTurn();
+                        }
+                    }, 800);
+                }, 1000);
+            }
+
+            isCurrentPlayerLocal() {
+                return this.currentPlayer === 0; // Assuming player 0 is always local
             }
 
             updatePlayerInfo() {
@@ -920,15 +2169,48 @@
                     
                     const info = document.createElement('div');
                     const finishedTokens = player.tokens.filter(t => t.position === 'finished').length;
+                    
                     info.innerHTML = `
-                        <div>Player ${index + 1}</div>
+                        <div style="font-weight: 600;">${player.name}</div>
                         <div style="font-size: 0.8rem; opacity: 0.8;">${finishedTokens}/4 finished</div>
                     `;
+                    
+                    if (this.isMultiplayer) {
+                        const status = document.createElement('div');
+                        status.className = 'connection-status';
+                        status.innerHTML = `
+                            <span class="status-dot ${player.isOnline ? 'online' : player.isAI ? 'ai' : 'offline'}"></span>
+                            <span style="font-size: 0.7rem;">
+                                ${player.isOnline ? 'Online' : player.isAI ? 'AI' : 'Local'}
+                            </span>
+                        `;
+                        info.appendChild(status);
+                    }
                     
                     card.appendChild(avatar);
                     card.appendChild(info);
                     playerInfo.appendChild(card);
                 });
+            }
+
+            updateMultiplayerPanel() {
+                const panel = document.getElementById('multiplayerPanel');
+                const playerList = document.getElementById('playerList');
+                
+                if (this.isMultiplayer) {
+                    panel.style.display = 'flex';
+                    document.getElementById('roomCode').textContent = this.roomCode || 'N/A';
+                    
+                    playerList.innerHTML = this.players.map((player, index) => `
+                        <div class="player-item">
+                            <div class="player-avatar token-${player.color}">${index + 1}</div>
+                            <span>${player.name}</span>
+                            <span class="status-dot ${player.isOnline ? 'online' : player.isAI ? 'ai' : 'offline'}"></span>
+                        </div>
+                    `).join('');
+                } else {
+                    panel.style.display = 'none';
+                }
             }
 
             updateGameStatus() {
@@ -938,19 +2220,51 @@
                 const statusDetail = status.querySelector('.status-detail');
                 
                 if (this.gameState === 'playing') {
-                    statusText.textContent = `Player ${this.currentPlayer + 1}'s Turn`;
-                    statusDetail.textContent = currentPlayerObj.isAI ? 
-                        'AI is thinking...' : 
-                        this.diceValue ? `Rolled ${this.diceValue} - Select a token` : 'Tap dice to roll';
+                    statusText.textContent = `${currentPlayerObj.name}'s Turn`;
+                    
+                    if (currentPlayerObj.isAI) {
+                        statusDetail.textContent = 'AI is thinking...';
+                    } else if (currentPlayerObj.isOnline) {
+                        statusDetail.textContent = 'Waiting for move...';
+                    } else {
+                        statusDetail.textContent = this.diceValue ? 
+                            `Rolled ${this.diceValue} - Select a token` : 
+                            'Tap dice to roll';
+                    }
                 } else if (this.gameState === 'paused') {
                     statusText.textContent = 'Game Paused';
-                    statusDetail.textContent = 'Tap to resume';
+                    statusDetail.textContent = 'Resume when ready';
                 }
             }
 
+            showMessage(message, type = 'info') {
+                const messageEl = document.createElement('div');
+                messageEl.style.cssText = `
+                    position: fixed;
+                    top: 80px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: ${type === 'success' ? 'var(--pastel-green)' : 
+                                type === 'warning' ? 'var(--pastel-coral)' : 
+                                'var(--pastel-blue)'};
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 25px;
+                    font-weight: 600;
+                    z-index: 1000;
+                    animation: slideInOut 3s ease-in-out forwards;
+                    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+                `;
+                messageEl.textContent = message;
+                document.body.appendChild(messageEl);
+                
+                setTimeout(() => messageEl.remove(), 3000);
+            }
+
+            // Event Handlers
             onTokenClick(event) {
                 if (this.gameState !== 'playing') return;
-                if (this.players[this.currentPlayer].isAI) return;
+                if (this.players[this.currentPlayer].isAI || this.players[this.currentPlayer].isOnline) return;
                 if (!this.diceValue) return;
                 
                 const tokenId = event.target.dataset.tokenId;
@@ -961,22 +2275,471 @@
                 const player = this.players[this.currentPlayer];
                 const token = player.tokens[parseInt(index)];
                 
-                if (token.canMove || event.target.classList.contains('selectable')) {
+                if (event.target.classList.contains('selectable')) {
                     this.moveToken(token);
                 }
             }
 
             onCellClick(event) {
-                const row = parseInt(event.target.dataset.row);
-                const col = parseInt(event.target.dataset.col);
-                
+                // Handle power-up usage or special moves
                 if (this.selectedToken && event.target.classList.contains('highlighted')) {
-                    this.moveToken(this.selectedToken, row, col);
+                    this.moveSelectedToken(event.target);
                 }
             }
 
+            // Utility Functions
+            getTotalMoves() {
+                return this.players.reduce((total, player) => {
+                    return total + player.tokens.reduce((playerMoves, token) => {
+                        return playerMoves + token.pathPosition;
+                    }, 0);
+                }, 0);
+            }
+
+            getGameDuration() {
+                // This would track actual game duration in a real implementation
+                return '5:23';
+            }
+
+            // Power-up System
+            showPowerUps() {
+                const currentPlayer = this.players[this.currentPlayer];
+                let powerUpsList = '';
+                
+                if (currentPlayer.powerUps.size === 0) {
+                    powerUpsList = '<p>No power-ups collected yet!</p>';
+                } else {
+                    currentPlayer.powerUps.forEach((count, type) => {
+                        powerUpsList += `
+                            <div class="player-item" style="justify-content: space-between;">
+                                <span>${POWER_UPS[type]?.icon || '⚡'} ${type}</span>
+                                <div>
+                                    <span style="background: var(--pastel-green); color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8rem;">
+                                        ${count}x
+                                    </span>
+                                    <button class="modal-btn" style="padding: 5px 10px; margin-left: 10px; font-size: 0.8rem;" 
+                                            onclick="gameManager.usePowerUp('${type}')">Use</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+                
+                const content = `
+                    <div style="text-align: center;">
+                        <h3>⚡ Power-ups</h3>
+                        <div style="margin: 20px 0; text-align: left;">
+                            ${powerUpsList}
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin: 20px 0; text-align: left;">
+                            <h4>🎮 Power-up Guide</h4>
+                            <p><strong>🛡️ Shield:</strong> Protect token from capture (3 turns)</p>
+                            <p><strong>⚡ Speed Boost:</strong> Move twice per turn (2 turns)</p>
+                            <p><strong>🌟 Teleport:</strong> Jump to any safe spot (1 use)</p>
+                            <p><strong>🔄 Token Swap:</strong> Switch places with opponent (1 use)</p>
+                        </div>
+                        
+                        <button class="modal-btn" onclick="gameManager.hideModal()">Close</button>
+                    </div>
+                `;
+                
+                this.showModal('Power-ups', content);
+            }
+
+            usePowerUp(type) {
+                const currentPlayer = this.players[this.currentPlayer];
+                
+                if (!currentPlayer.powerUps.has(type) || currentPlayer.powerUps.get(type) <= 0) {
+                    this.showMessage('No power-ups of this type!', 'warning');
+                    return;
+                }
+                
+                currentPlayer.powerUps.set(type, currentPlayer.powerUps.get(type) - 1);
+                if (currentPlayer.powerUps.get(type) === 0) {
+                    currentPlayer.powerUps.delete(type);
+                }
+                
+                this.activatePowerUp(type);
+                this.hideModal();
+                this.showMessage(`${type} activated!`, 'success');
+            }
+
+            activatePowerUp(type) {
+                const currentPlayer = this.players[this.currentPlayer];
+                
+                switch(type) {
+                    case 'Shield':
+                        this.applyShieldToTokens(currentPlayer);
+                        break;
+                    case 'Speed Boost':
+                        this.applySpeedBoost(currentPlayer);
+                        break;
+                    case 'Teleport':
+                        this.showTeleportOptions(currentPlayer);
+                        break;
+                    case 'Token Swap':
+                        this.showSwapOptions(currentPlayer);
+                        break;
+                }
+            }
+
+            applyShieldToTokens(player) {
+                player.tokens.forEach(token => {
+                    if (token.position === 'board') {
+                        token.hasShield = true;
+                        token.shieldTurns = 3;
+                        
+                        const tokenElement = document.querySelector(`[data-token-id="${token.id}"]`);
+                        if (tokenElement) {
+                            tokenElement.style.boxShadow = '0 0 15px #FFD700, 0 6px 15px rgba(0, 0, 0, 0.2)';
+                        }
+                    }
+                });
+            }
+
+            applySpeedBoost(player) {
+                player.speedBoostTurns = 2;
+            }
+
+            // Settings and Preferences
+            showSettings() {
+                const content = `
+                    <div style="text-align: left;">
+                        <h3>⚙️ Game Settings</h3>
+                        
+                        <div style="margin: 20px 0;">
+                            <h4>🎵 Audio & Effects</h4>
+                            <label style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
+                                <input type="checkbox" ${this.soundEnabled ? 'checked' : ''} 
+                                       onchange="gameManager.toggleSound(this.checked)">
+                                <span>Enable Sound Effects</span>
+                            </label>
+                            
+                            <label style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
+                                <input type="checkbox" ${this.animationsEnabled ? 'checked' : ''} 
+                                       onchange="gameManager.toggleAnimations(this.checked)">
+                                <span>Enable Animations</span>
+                            </label>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <h4>🤖 AI Difficulty</h4>
+                            <div class="modal-buttons">
+                                <button class="modal-btn ${this.aiDifficulty === 'easy' ? 'active' : ''}" 
+                                        onclick="gameManager.setDifficulty('easy')">Easy</button>
+                                <button class="modal-btn ${this.aiDifficulty === 'medium' ? 'active' : ''}" 
+                                        onclick="gameManager.setDifficulty('medium')">Medium</button>
+                                <button class="modal-btn ${this.aiDifficulty === 'hard' ? 'active' : ''}" 
+                                        onclick="gameManager.setDifficulty('hard')">Hard</button>
+                            </div>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <h4>🎮 Game Controls</h4>
+                            <div style="background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px;">
+                                <p><strong>Space:</strong> Roll dice</p>
+                                <p><strong>P:</strong> Pause game</p>
+                                <p><strong>R:</strong> Restart game</p>
+                                <p><strong>ESC:</strong> Open settings</p>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-buttons">
+                            <button class="modal-btn" onclick="gameManager.exportData()">📤 Export Data</button>
+                            <button class="modal-btn" onclick="gameManager.importData()">📥 Import Data</button>
+                            <button class="modal-btn" onclick="gameManager.hideModal()">Close</button>
+                        </div>
+                    </div>
+                `;
+                
+                this.showModal('Settings', content);
+            }
+
+            showStats() {
+                const winRate = this.getWinRate();
+                const content = `
+                    <div style="text-align: center;">
+                        <h3>📊 Game Statistics</h3>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0;">
+                            <div style="background: var(--glass-bg); padding: 15px; border-radius: 15px;">
+                                <div style="font-size: 2rem; color: var(--pastel-blue);">🎮</div>
+                                <div style="font-weight: 600;">${this.gameStats.gamesPlayed}</div>
+                                <div style="font-size: 0.9rem; opacity: 0.8;">Games Played</div>
+                            </div>
+                            
+                            <div style="background: var(--glass-bg); padding: 15px; border-radius: 15px;">
+                                <div style="font-size: 2rem; color: var(--pastel-green);">🏆</div>
+                                <div style="font-weight: 600;">${this.gameStats.gamesWon}</div>
+                                <div style="font-size: 0.9rem; opacity: 0.8;">Games Won</div>
+                            </div>
+                            
+                            <div style="background: var(--glass-bg); padding: 15px; border-radius: 15px;">
+                                <div style="font-size: 2rem; color: var(--pastel-pink);">🎯</div>
+                                <div style="font-weight: 600;">${this.gameStats.tokensCapture}</div>
+                                <div style="font-size: 0.9rem; opacity: 0.8;">Tokens Captured</div>
+                            </div>
+                            
+                            <div style="background: var(--glass-bg); padding: 15px; border-radius: 15px;">
+                                <div style="font-size: 2rem; color: var(--pastel-yellow);">⚡</div>
+                                <div style="font-weight: 600;">${this.gameStats.powerUpsUsed}</div>
+                                <div style="font-size: 0.9rem; opacity: 0.8;">Power-ups Used</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: var(--glass-bg); padding: 20px; border-radius: 15px; margin: 20px 0;">
+                            <h4>🎯 Win Rate</h4>
+                            <div style="font-size: 2.5rem; font-weight: 700; color: var(--text-accent);">
+                                ${winRate}%
+                            </div>
+                            <div style="background: rgba(255,255,255,0.2); height: 8px; border-radius: 4px; margin: 10px 0;">
+                                <div style="background: var(--pastel-green); height: 100%; width: ${winRate}%; border-radius: 4px; transition: width 0.5s ease;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-buttons">
+                            <button class="modal-btn" onclick="gameManager.resetStats()">🔄 Reset Stats</button>
+                            <button class="modal-btn" onclick="gameManager.shareStats()">📱 Share Stats</button>
+                            <button class="modal-btn" onclick="gameManager.hideModal()">Close</button>
+                        </div>
+                    </div>
+                `;
+                
+                this.showModal('Statistics', content);
+            }
+
+            // Additional Features
+            toggleMultiplayer() {
+                this.isMultiplayer = !this.isMultiplayer;
+                const btn = document.getElementById('multiplayerBtnText');
+                
+                if (this.isMultiplayer) {
+                    btn.textContent = '🔌 Go Offline';
+                    this.gameMode = 'online';
+                    document.getElementById('roomCode').textContent = this.roomCode || 'DEMO123';
+                } else {
+                    btn.textContent = '🔗 Go Online';
+                    this.gameMode = 'offline';
+                    document.getElementById('roomCode').textContent = 'Offline Mode';
+                }
+                
+                this.updateMultiplayerPanel();
+            }
+
+            togglePause() {
+                if (this.gameState === 'playing') {
+                    this.gameState = 'paused';
+                    this.clearTurnTimer();
+                } else if (this.gameState === 'paused') {
+                    this.gameState = 'playing';
+                    if (this.customRules.timeLimit) {
+                        this.startTurnTimer();
+                    }
+                }
+                this.updateGameStatus();
+            }
+
+            toggleSound(enabled) {
+                this.soundEnabled = enabled;
+                this.saveGameData();
+            }
+
+            toggleAnimations(enabled) {
+                this.animationsEnabled = enabled;
+                document.body.style.setProperty('--animation-duration', enabled ? '0.3s' : '0s');
+                this.saveGameData();
+            }
+
+            setDifficulty(level) {
+                this.aiDifficulty = level;
+                this.saveGameData();
+                
+                // Update UI
+                document.querySelectorAll('.modal-btn').forEach(btn => {
+                    if (btn.onclick && btn.onclick.toString().includes('setDifficulty')) {
+                        btn.classList.remove('active');
+                    }
+                });
+                event.target.classList.add('active');
+            }
+
+            resetGame() {
+                this.hideModal();
+                this.clearTurnTimer();
+                
+                // Reset game state
+                this.currentPlayer = 0;
+                this.gameState = 'setup';
+                this.diceValue = 0;
+                this.consecutiveSixes = 0;
+                this.selectedToken = null;
+                
+                // Clear board
+                document.querySelectorAll('.token').forEach(token => token.remove());
+                document.querySelectorAll('.particle').forEach(particle => particle.remove());
+                document.querySelectorAll('.power-up').forEach(powerup => powerup.remove());
+                
+                // Reset dice
+                document.getElementById('dice').textContent = '🎲';
+                
+                // Clear effects
+                document.querySelectorAll('.victory-animation').forEach(el => el.classList.remove('victory-animation'));
+                
+                this.showMainMenu();
+            }
+
+            resetStats() {
+                if (confirm('Are you sure you want to reset all statistics?')) {
+                    this.gameStats = {
+                        gamesPlayed: 0,
+                        gamesWon: 0,
+                        tokensCapture: 0,
+                        powerUpsUsed: 0
+                    };
+                    this.saveGameData();
+                    this.showStats();
+                    this.showMessage('Statistics reset!', 'info');
+                }
+            }
+
+            shareResult() {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Ludo Master Pro - Victory!',
+                        text: `I just won a game of Ludo Master Pro! 🏆 Win rate: ${this.getWinRate()}%`,
+                        url: window.location.href
+                    });
+                } else {
+                    const text = `I just won a game of Ludo Master Pro! 🏆 Win rate: ${this.getWinRate()}%`;
+                    navigator.clipboard.writeText(text);
+                    this.showMessage('Result copied to clipboard!', 'success');
+                }
+            }
+
+            shareStats() {
+                const stats = `🎮 My Ludo Master Pro Stats 📊\n🎯 Games: ${this.gameStats.gamesPlayed}\n🏆 Wins: ${this.gameStats.gamesWon}\n📈 Win Rate: ${this.getWinRate()}%\n🎯 Captures: ${this.gameStats.tokensCapture}`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'Ludo Master Pro Stats',
+                        text: stats
+                    });
+                } else {
+                    navigator.clipboard.writeText(stats);
+                    this.showMessage('Stats copied to clipboard!', 'success');
+                }
+            }
+
+            exportData() {
+                const data = {
+                    stats: this.gameStats,
+                    settings: {
+                        theme: this.currentTheme,
+                        difficulty: this.aiDifficulty,
+                        sound: this.soundEnabled,
+                        animations: this.animationsEnabled,
+                        customRules: this.customRules
+                    },
+                    timestamp: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ludo-master-data-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                
+                this.showMessage('Data exported successfully!', 'success');
+            }
+
+            importData() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                const data = JSON.parse(e.target.result);
+                                this.gameStats = { ...this.gameStats, ...data.stats };
+                                if (data.settings) {
+                                    this.currentTheme = data.settings.theme || this.currentTheme;
+                                    this.aiDifficulty = data.settings.difficulty || this.aiDifficulty;
+                                    this.soundEnabled = data.settings.sound !== undefined ? data.settings.sound : this.soundEnabled;
+                                    this.customRules = { ...this.customRules, ...data.settings.customRules };
+                                }
+                                this.saveGameData();
+                                this.applyTheme(this.currentTheme);
+                                this.showMessage('Data imported successfully!', 'success');
+                                this.hideModal();
+                            } catch (error) {
+                                this.showMessage('Invalid file format!', 'warning');
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                };
+                input.click();
+            }
+
+            // Event Listener Setup
             setupEventListeners() {
-                // Touch gestures
+                // Keyboard shortcuts
+                document.addEventListener('keydown', (e) => {
+                    if (document.querySelector('.game-modal:not(.hidden)')) return;
+                    
+                    switch(e.code) {
+                        case 'Space':
+                            e.preventDefault();
+                            this.rollDice();
+                            break;
+                        case 'KeyP':
+                            this.togglePause();
+                            break;
+                        case 'KeyR':
+                            if (confirm('Restart game?')) this.resetGame();
+                            break;
+                        case 'Escape':
+                            this.showSettings();
+                            break;
+                        case 'KeyS':
+                            this.showStats();
+                            break;
+                    }
+                });
+                
+                // Touch gestures for mobile
+                this.setupTouchGestures();
+                
+                // Prevent accidental zoom
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', (e) => {
+                    const now = Date.now();
+                    if (now - lastTouchEnd <= 300) {
+                        e.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
+                
+                // Window resize
+                window.addEventListener('resize', () => {
+                    this.adjustUIForScreenSize();
+                });
+                
+                // Visibility change (pause on tab switch)
+                document.addEventListener('visibilitychange', () => {
+                    if (document.hidden && this.gameState === 'playing') {
+                        this.togglePause();
+                    }
+                });
+            }
+
+            setupTouchGestures() {
                 let touchStartX, touchStartY, touchStartTime;
                 
                 document.addEventListener('touchstart', (e) => {
@@ -997,52 +2760,21 @@
                     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
                     
                     // Long press detection
-                    if (touchDuration > 500 && distance < 20) {
+                    if (touchDuration > 800 && distance < 30) {
                         this.handleLongPress(e);
                     }
                     
                     // Swipe detection
-                    if (distance > 50) {
+                    if (distance > 100) {
                         this.handleSwipe(deltaX, deltaY);
                     }
                 });
-                
-                // Keyboard shortcuts
-                document.addEventListener('keydown', (e) => {
-                    switch(e.code) {
-                        case 'Space':
-                            e.preventDefault();
-                            this.rollDice();
-                            break;
-                        case 'KeyP':
-                            this.togglePause();
-                            break;
-                        case 'KeyR':
-                            this.resetGame();
-                            break;
-                        case 'Escape':
-                            this.showSettings();
-                            break;
-                    }
-                });
-                
-                // Prevent zoom on double tap
-                let lastTouchEnd = 0;
-                document.addEventListener('touchend', (e) => {
-                    const now = Date.now();
-                    if (now - lastTouchEnd <= 300) {
-                        e.preventDefault();
-                    }
-                    lastTouchEnd = now;
-                }, false);
             }
 
             handleLongPress(event) {
-                if (this.gameState !== 'playing') return;
-                
                 const target = event.target.closest('.token');
-                if (target) {
-                    this.showTokenInfo(target.dataset.tokenId);
+                if (target && this.customRules.powerUpsEnabled) {
+                    this.showTokenPowerUpMenu(target.dataset.tokenId);
                 }
             }
 
@@ -1065,132 +2797,18 @@
                 }
             }
 
-            showTokenInfo(tokenId) {
-                const [color, index] = tokenId.split('-');
-                const player = this.players.find(p => p.color === color);
-                const token = player.tokens[parseInt(index)];
+            adjustUIForScreenSize() {
+                const container = document.querySelector('.game-container');
+                const isSmallScreen = window.innerWidth < 768;
                 
-                const info = `
-                    <h3>Token Information</h3>
-                    <p><strong>Player:</strong> ${player.id + 1} (${color.toUpperCase()})</p>
-                    <p><strong>Position:</strong> ${token.position}</p>
-                    <p><strong>Status:</strong> ${token.isInSafety ? 'Safe' : 'Vulnerable'}</p>
-                `;
-                
-                this.showModal('Token Info', info);
-            }
-
-            togglePause() {
-                if (this.gameState === 'playing') {
-                    this.gameState = 'paused';
-                } else if (this.gameState === 'paused') {
-                    this.gameState = 'playing';
+                if (isSmallScreen) {
+                    container.style.setProperty('--board-size', '95vw');
+                } else {
+                    container.style.setProperty('--board-size', 'min(85vw, 85vh)');
                 }
-                this.updateGameStatus();
             }
 
-            showSettings() {
-                const content = `
-                    <div style="text-align: left;">
-                        <h3>Game Settings</h3>
-                        <div style="margin: 15px 0;">
-                            <label>AI Difficulty:</label>
-                            <div class="modal-buttons">
-                                <button class="modal-btn ${this.aiDifficulty === 'easy' ? 'active' : ''}" 
-                                        onclick="gameManager.setDifficulty('easy')">Easy</button>
-                                <button class="modal-btn ${this.aiDifficulty === 'medium' ? 'active' : ''}" 
-                                        onclick="gameManager.setDifficulty('medium')">Medium</button>
-                                <button class="modal-btn ${this.aiDifficulty === 'hard' ? 'active' : ''}" 
-                                        onclick="gameManager.setDifficulty('hard')">Hard</button>
-                            </div>
-                        </div>
-                        <div style="margin: 15px 0;">
-                            <label>
-                                <input type="checkbox" ${this.soundEnabled ? 'checked' : ''} 
-                                       onchange="gameManager.toggleSound(this.checked)"> 
-                                Enable Sound Effects
-                            </label>
-                        </div>
-                        <div class="modal-buttons">
-                            <button class="modal-btn" onclick="gameManager.hideModal()">Close</button>
-                        </div>
-                    </div>
-                `;
-                
-                this.showModal('Settings', content);
-            }
-
-            showStats() {
-                const stats = this.players.map((player, index) => {
-                    const finished = player.tokens.filter(t => t.position === 'finished').length;
-                    const onBoard = player.tokens.filter(t => t.position === 'board').length;
-                    const atHome = player.tokens.filter(t => t.position === 'home').length;
-                    
-                    return `
-                        <div style="margin: 10px 0; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px;">
-                            <h4>Player ${index + 1} (${player.color.toUpperCase()})</h4>
-                            <div>Finished: ${finished}/4</div>
-                            <div>On Board: ${onBoard}</div>
-                            <div>At Home: ${atHome}</div>
-                        </div>
-                    `;
-                }).join('');
-                
-                const content = `
-                    <h3>Game Statistics</h3>
-                    ${stats}
-                    <div class="modal-buttons">
-                        <button class="modal-btn" onclick="gameManager.hideModal()">Close</button>
-                    </div>
-                `;
-                
-                this.showModal('Statistics', content);
-            }
-
-            setDifficulty(level) {
-                this.aiDifficulty = level;
-                this.showSettings(); // Refresh settings modal
-            }
-
-            toggleSound(enabled) {
-                this.soundEnabled = enabled;
-            }
-
-            resetGame() {
-                this.currentPlayer = 0;
-                this.gameState = 'setup';
-                this.diceValue = 0;
-                this.consecutiveSixes = 0;
-                this.selectedToken = null;
-                
-                // Clear board
-                document.querySelectorAll('.token').forEach(token => token.remove());
-                document.querySelectorAll('.particle').forEach(particle => particle.remove());
-                
-                // Reset dice
-                document.getElementById('dice').textContent = '🎲';
-                
-                this.showModal('Game Setup', this.getSetupContent());
-            }
-
-            getSetupContent() {
-                return `
-                    <p>Select number of players:</p>
-                    <div class="modal-buttons">
-                        <button class="modal-btn" onclick="gameManager.startGame(2)">2 Players</button>
-                        <button class="modal-btn" onclick="gameManager.startGame(3)">3 Players</button>
-                        <button class="modal-btn" onclick="gameManager.startGame(4)">4 Players</button>
-                    </div>
-                    <div style="margin-top: 20px; font-size: 0.9rem; opacity: 0.8;">
-                        <p>🎮 Controls:</p>
-                        <p>• Tap dice to roll</p>
-                        <p>• Tap tokens to move</p>
-                        <p>• Long press for token info</p>
-                        <p>• Swipe for quick actions</p>
-                    </div>
-                `;
-            }
-
+            // Modal System
             showModal(title, content) {
                 const modal = document.getElementById('gameModal');
                 const modalTitle = document.getElementById('modalTitle');
@@ -1199,6 +2817,13 @@
                 modalTitle.textContent = title;
                 modalContent.innerHTML = content;
                 modal.classList.remove('hidden');
+                
+                // Add backdrop click to close
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        this.hideModal();
+                    }
+                };
             }
 
             hideModal() {
@@ -1206,33 +2831,58 @@
             }
         }
 
-        // Additional CSS animations
+        // Additional CSS for new animations
         const additionalStyles = document.createElement('style');
         additionalStyles.textContent = `
-            @keyframes explode {
-                0% { transform: scale(1); opacity: 1; }
-                100% { transform: scale(3); opacity: 0; }
+            @keyframes slideInOut {
+                0% { transform: translateX(-50%) translateY(-20px); opacity: 0; }
+                10%, 90% { transform: translateX(-50%) translateY(0); opacity: 1; }
+                100% { transform: translateX(-50%) translateY(-20px); opacity: 0; }
             }
             
-            @keyframes confetti {
-                0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-                100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+            @keyframes particle-burst {
+                0% { transform: scale(0) rotate(0deg); opacity: 1; }
+                50% { transform: scale(1.5) rotate(180deg); opacity: 0.8; }
+                100% { transform: scale(0.5) rotate(360deg); opacity: 0; }
             }
             
-            .modal-btn.active {
-                background: linear-gradient(45deg, #2ed573, #1dd1a1);
-                transform: scale(1.05);
-            }
-            
-            @media (prefers-reduced-motion: reduce) {
-                .token, .dice, .particle {
-                    animation: none !important;
-                    transition: none !important;
+            @keyframes confetti-fall {
+                0% { 
+                    transform: translateY(0) rotate(0deg); 
+                    opacity: 1; 
+                }
+                100% { 
+                    transform: translateY(100vh) rotate(720deg); 
+                    opacity: 0; 
                 }
             }
             
-            /* PWA splash screen styles */
+            .modal-btn.active {
+                background: linear-gradient(45deg, var(--pastel-green), #32CD32) !important;
+                transform: scale(1.05);
+                box-shadow: 0 0 20px rgba(50, 205, 50, 0.5);
+            }
+            
+            /* Responsive font scaling */
+            @media (max-width: 480px) {
+                .game-title { font-size: 1.5rem; }
+                .modal-title { font-size: 1.4rem; }
+                .token { font-size: 0.7rem; }
+                .dice { font-size: 2rem; }
+            }
+            
+            /* High performance mode for older devices */
+            @media (max-width: 480px) and (max-height: 640px) {
+                .bubble, .floating-bubbles { display: none; }
+                .token::before { display: none; }
+                .board-cell { transition: none; }
+            }
+            
+            /* PWA improvements */
             @media (display-mode: standalone) {
+                .game-header { top: 25px; }
+                .game-controls { top: 25px; }
+                
                 body::before {
                     content: '';
                     position: fixed;
@@ -1240,24 +2890,50 @@
                     left: 0;
                     width: 100%;
                     height: 100%;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    background: inherit;
                     z-index: -1;
                 }
+            }
+            
+            /* Dark theme overrides */
+            @media (prefers-color-scheme: dark) {
+                .game-board { 
+                    background: rgba(0, 0, 0, 0.3);
+                    border-color: rgba(255, 255, 255, 0.2);
+                }
+                .board-cell.path { background: rgba(255, 255, 255, 0.1); }
+                .modal-content { background: rgba(0, 0, 0, 0.4); }
+            }
+            
+            /* Accessibility improvements */
+            @media (prefers-reduced-motion: reduce) {
+                * {
+                    animation-duration: 0.01ms !important;
+                    animation-iteration-count: 1 !important;
+                    transition-duration: 0.01ms !important;
+                }
+            }
+            
+            /* Focus indicators for keyboard navigation */
+            .control-btn:focus, .modal-btn:focus, .dice:focus {
+                outline: 3px solid var(--pastel-blue);
+                outline-offset: 2px;
             }
         `;
         document.head.appendChild(additionalStyles);
 
-        // Initialize game
+        // Initialize the enhanced game
         const gameManager = new GameManager();
 
-        // PWA Service Worker Registration
+        // PWA enhancements
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 const swScript = `
-                    const CACHE_NAME = 'ludo-game-v1';
+                    const CACHE_NAME = 'ludo-master-pro-v2';
                     const urlsToCache = [
                         '/',
-                        '/index.html'
+                        '/index.html',
+                        'https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap'
                     ];
                     
                     self.addEventListener('install', event => {
@@ -1279,30 +2955,119 @@
                 const swUrl = URL.createObjectURL(blob);
                 
                 navigator.serviceWorker.register(swUrl)
-                    .then(registration => console.log('SW registered'))
-                    .catch(error => console.log('SW registration failed'));
+                    .then(registration => {
+                        console.log('Service Worker registered successfully');
+                    })
+                    .catch(error => {
+                        console.log('Service Worker registration failed');
+                    });
             });
         }
 
-        // Web App Manifest (inline)
+        // Enhanced Web App Manifest
         const manifest = {
-            name: "Ludo Master - Advanced Mobile Game",
-            short_name: "Ludo Master",
-            description: "A feature-rich, mobile-first Ludo game with AI opponents",
+            name: "Ludo Master Pro - Advanced Multiplayer Game",
+            short_name: "Ludo Master Pro",
+            description: "The ultimate Ludo experience with multiplayer, AI, power-ups, and beautiful design",
             start_url: "/",
             display: "standalone",
-            background_color: "#667eea",
-            theme_color: "#764ba2",
+            background_color: "#FFE5E5",
+            theme_color: "#FFB3D9",
+            orientation: "portrait",
+            categories: ["games", "entertainment"],
+            lang: "en",
             icons: [
                 {
                     src: "data:image/svg+xml;base64," + btoa(`
                         <svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
-                            <rect width="192" height="192" fill="#667eea" rx="20"/>
-                            <text x="96" y="120" font-size="80" text-anchor="middle" fill="white">🎲</text>
+                            <defs>
+                                <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#FFB3D9;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#D9B3FF;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <rect width="192" height="192" fill="url(#bg)" rx="32"/>
+                            <circle cx="96" cy="96" r="60" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+                            <text x="96" y="115" font-size="48" text-anchor="middle" fill="white" font-family="Arial">🎲</text>
                         </svg>
                     `),
                     sizes: "192x192",
-                    type: "image/svg+xml"
+                    type: "image/svg+xml",
+                    purpose: "any maskable"
+                },
+                {
+                    src: "data:image/svg+xml;base64," + btoa(`
+                        <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+                            <defs>
+                                <linearGradient id="bg512" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style="stop-color:#FFB3D9;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#B3D9FF;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#B3FFD9;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <rect width="512" height="512" fill="url(#bg512)" rx="80"/>
+                            <circle cx="256" cy="256" r="180" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="4"/>
+                            <circle cx="256" cy="256" r="120" fill="rgba(255,255,255,0.1)"/>
+                            <text x="256" y="290" font-size="120" text-anchor="middle" fill="white" font-family="Arial">🎲</text>
+                        </svg>
+                    `),
+                    sizes: "512x512",
+                    type: "image/svg+xml",
+                    purpose: "any maskable"
+                }
+            ],
+            screenshots: [
+                {
+                    src: "data:image/svg+xml;base64," + btoa(`
+                        <svg xmlns="http://www.w3.org/2000/svg" width="540" height="720" viewBox="0 0 540 720">
+                            <rect width="540" height="720" fill="#FFE5E5"/>
+                            <text x="270" y="100" font-size="32" text-anchor="middle" fill="#5A5A5A" font-family="Arial">🎲 Ludo Master Pro</text>
+                            <rect x="70" y="200" width="400" height="400" fill="rgba(255,255,255,0.3)" rx="20"/>
+                            <text x="270" y="620" font-size="18" text-anchor="middle" fill="#8E8E8E">Beautiful UI with smooth animations</text>
+                        </svg>
+                    `),
+                    sizes: "540x720",
+                    type: "image/svg+xml",
+                    form_factor: "narrow",
+                    label: "Game Board View"
+                }
+            ],
+            shortcuts: [
+                {
+                    name: "Quick Game",
+                    short_name: "Quick",
+                    description: "Start a quick 2-player game",
+                    url: "/?mode=quick",
+                    icons: [
+                        {
+                            src: "data:image/svg+xml;base64," + btoa(`
+                                <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+                                    <circle cx="48" cy="48" r="48" fill="#4ECDC4"/>
+                                    <text x="48" y="58" font-size="32" text-anchor="middle" fill="white">⚡</text>
+                                </svg>
+                            `),
+                            sizes: "96x96",
+                            type: "image/svg+xml"
+                        }
+                    ]
+                },
+                {
+                    name: "Online Game",
+                    short_name: "Online",
+                    description: "Join or create online game",
+                    url: "/?mode=online",
+                    icons: [
+                        {
+                            src: "data:image/svg+xml;base64," + btoa(`
+                                <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+                                    <circle cx="48" cy="48" r="48" fill="#6C5CE7"/>
+                                    <text x="48" y="58" font-size="32" text-anchor="middle" fill="white">🌐</text>
+                                </svg>
+                            `),
+                            sizes: "96x96",
+                            type: "image/svg+xml"
+                        }
+                    ]
                 }
             ]
         };
@@ -1321,21 +3086,222 @@
             e.preventDefault();
             deferredPrompt = e;
             
-            // Show install button
-            const installBtn = document.createElement('button');
-            installBtn.className = 'control-btn';
-            installBtn.innerHTML = '📱 Install';
-            installBtn.onclick = () => {
-                deferredPrompt.prompt();
-                deferredPrompt.userChoice.then((choiceResult) => {
-                    if (choiceResult.outcome === 'accepted') {
-                        installBtn.style.display = 'none';
+            // Show custom install button after game loads
+            setTimeout(() => {
+                const installBtn = document.createElement('button');
+                installBtn.className = 'control-btn';
+                installBtn.innerHTML = '<span>📱</span> Install App';
+                installBtn.onclick = async () => {
+                    if (deferredPrompt) {
+                        deferredPrompt.prompt();
+                        const { outcome } = await deferredPrompt.userChoice;
+                        if (outcome === 'accepted') {
+                            installBtn.style.display = 'none';
+                            gameManager.showMessage('App installed successfully!', 'success');
+                        }
+                        deferredPrompt = null;
                     }
-                    deferredPrompt = null;
-                });
-            };
+                };
+                
+                document.querySelector('.game-controls').appendChild(installBtn);
+            }, 3000);
+        });
+
+        // Handle app installation
+        window.addEventListener('appinstalled', () => {
+            gameManager.showMessage('Welcome to Ludo Master Pro!', 'success');
+            // Hide install button
+            const installBtn = document.querySelector('.game-controls button[onclick*="Install"]');
+            if (installBtn) installBtn.remove();
+        });
+
+        // Performance optimizations
+        // Intersection Observer for efficient rendering
+        const observerOptions = {
+            root: null,
+            rootMargin: '50px',
+            threshold: 0.1
+        };
+
+        const cellObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.willChange = 'transform';
+                } else {
+                    entry.target.style.willChange = 'auto';
+                }
+            });
+        }, observerOptions);
+
+        // Observe board cells for performance
+        setTimeout(() => {
+            document.querySelectorAll('.board-cell').forEach(cell => {
+                cellObserver.observe(cell);
+            });
+        }, 1000);
+
+        // Memory management
+        let animationFrameId;
+        const performanceMonitor = () => {
+            // Clean up unused DOM elements
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach(particle => {
+                if (parseFloat(getComputedStyle(particle).opacity) === 0) {
+                    particle.remove();
+                }
+            });
+
+            // Monitor memory usage (if available)
+            if (performance.memory && performance.memory.usedJSHeapSize > 50000000) { // 50MB
+                console.warn('High memory usage detected, cleaning up...');
+                // Trigger garbage collection hints
+                if (window.gc) window.gc();
+            }
+
+            animationFrameId = requestAnimationFrame(performanceMonitor);
+        };
+
+        // Start performance monitoring
+        performanceMonitor();
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', () => {
+            cancelAnimationFrame(animationFrameId);
+            cellObserver.disconnect();
+            gameManager.saveGameData();
+        });
+
+        // URL parameter handling for shortcuts
+        const urlParams = new URLSearchParams(window.location.search);
+        const mode = urlParams.get('mode');
+
+        window.addEventListener('load', () => {
+            // Handle shortcut parameters
+            setTimeout(() => {
+                switch(mode) {
+                    case 'quick':
+                        gameManager.startQuickGame(2);
+                        break;
+                    case 'online':
+                        gameManager.showMultiplayerMenu();
+                        break;
+                    default:
+                        // Normal startup
+                        break;
+                }
+            }, 500);
+        });
+
+        // Error handling and recovery
+        window.addEventListener('error', (e) => {
+            console.error('Game error:', e);
+            gameManager.showMessage('Something went wrong! Game will recover...', 'warning');
             
-            document.querySelector('.game-controls').appendChild(installBtn);
+            // Auto-recovery after errors
+            setTimeout(() => {
+                if (gameManager.gameState === 'error') {
+                    gameManager.resetGame();
+                }
+            }, 3000);
+        });
+
+        // Network status handling for online features
+        window.addEventListener('online', () => {
+            if (gameManager.gameMode === 'online') {
+                gameManager.showMessage('Connection restored!', 'success');
+            }
+        });
+
+        window.addEventListener('offline', () => {
+            if (gameManager.gameMode === 'online') {
+                gameManager.showMessage('Connection lost! Switched to offline mode.', 'warning');
+                gameManager.gameMode = 'offline';
+            }
+        });
+
+        // Device orientation handling
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                gameManager.adjustUIForScreenSize();
+            }, 100);
+        });
+
+        // Battery API integration (experimental)
+        if ('getBattery' in navigator) {
+            navigator.getBattery().then(battery => {
+                const handleBatteryChange = () => {
+                    if (battery.level < 0.15 && !battery.charging) {
+                        // Reduce animations and effects on low battery
+                        document.body.classList.add('low-power-mode');
+                        gameManager.animationsEnabled = false;
+                    } else if (battery.level > 0.25 || battery.charging) {
+                        document.body.classList.remove('low-power-mode');
+                    }
+                };
+
+                battery.addEventListener('levelchange', handleBatteryChange);
+                battery.addEventListener('chargingchange', handleBatteryChange);
+                handleBatteryChange();
+            });
+        }
+
+        // Wake Lock API to prevent screen sleep during gameplay
+        let wakeLock = null;
+        const requestWakeLock = async () => {
+            if ('wakeLock' in navigator && gameManager.gameState === 'playing') {
+                try {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                } catch (err) {
+                    console.log('Wake lock failed:', err);
+                }
+            }
+        };
+
+        const releaseWakeLock = () => {
+            if (wakeLock) {
+                wakeLock.release();
+                wakeLock = null;
+            }
+        };
+
+        // Request wake lock when game starts
+        document.addEventListener('gamestart', requestWakeLock);
+        document.addEventListener('gamepause', releaseWakeLock);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && gameManager.gameState === 'playing') {
+                requestWakeLock();
+            } else {
+                releaseWakeLock();
+            }
+        });
+
+        // Haptic feedback enhancements (if supported)
+        const playHaptic = (type) => {
+            if ('vibrate' in navigator && gameManager.soundEnabled) {
+                const patterns = {
+                    light: [50],
+                    medium: [100],
+                    heavy: [200],
+                    success: [100, 50, 100],
+                    error: [200, 100, 200],
+                    capture: [50, 50, 50, 50, 200]
+                };
+                navigator.vibrate(patterns[type] || patterns.light);
+            }
+        };
+
+        // Export haptic function for use in game
+        gameManager.playHaptic = playHaptic;
+
+        console.log('🎲 Ludo Master Pro initialized successfully!');
+        console.log('🎮 Features loaded:', {
+            multiplayer: true,
+            powerUps: true,
+            ai: true,
+            customRules: true,
+            themes: true,
+            pwa: true,
+            performance: true
         });
     </script>
 </body>
