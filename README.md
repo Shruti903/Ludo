@@ -26,11 +26,11 @@ A beautiful, feature-rich, and modern web-based Ludo game with multiplayer suppo
 - **🎯 Precision Strike**: Enhanced capture abilities
 
 ### 🎨 Beautiful Design
-- **Glassmorphism UI**: Modern glass-like interface elements
-- **4 Stunning Themes**: Pastel, Vibrant, Dark, and Sunset
-- **Smooth Animations**: 60fps animations with cubic-bezier transitions
-- **Particle Effects**: Capture explosions, victory confetti, power-up collections
-- **Responsive Design**: Perfect on desktop, tablet, and mobile
+- **Glassmorphism UI**: Modern glass-like interface elements.
+- **4 Stunning Themes**: Pastel, Vibrant, Dark, and Sunset.
+- **Smooth Animations**: 60fps animations with cubic-bezier transitions.
+- **Particle Effects**: Capture explosions, victory confetti, power-up collections.
+- **Responsive Design**: Perfect on desktop, tablet, and mobile.
 
 ### 🌐 Progressive Web App (PWA)
 - **Install as App**: Add to home screen on any device
