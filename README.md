@@ -6,11 +6,11 @@ A beautiful, feature-rich, and modern web-based Ludo game with multiplayer suppo
 ## ✨ Features
 
 ### 🎮 Game Modes
-- **Quick Game**: Start playing immediately with 2 or 4 players
-- **Custom Setup**: Configure players, AI difficulty, and game rules
-- **Online Multiplayer**: Play with friends using room codes (simulated)
-- **Tournament Mode**: Bracket tournaments and survival challenges
-- **Offline Play**: Full functionality without internet connection
+- **Quick Game**: Start playing immediately with 2 or 4 players.
+- **Custom Setup**: Configure players, AI difficulty, and game rules.
+- **Online Multiplayer**: Play with friends using room codes (simulated).
+- **Tournament Mode**: Bracket tournaments and survival challenges.
+- **Offline Play**: Full functionality without internet connection.
 
 ### 🤖 Advanced AI
 - **3 Difficulty Levels**: Easy, Medium, and Hard AI opponents.
