@@ -18,12 +18,12 @@ A beautiful, feature-rich, and modern web-based Ludo game with multiplayer suppo
 - **Dynamic Decision Making**: Context-aware move selection.
 
 ### ⚡ Power-ups System
-- **🛡️ Shield**: Protect tokens from capture (3 turns)
-- **⚡ Speed Boost**: Move twice per turn (2 turns)
-- **🌟 Teleport**: Jump to any safe spot (1 use)
-- **🔄 Token Swap**: Switch positions with opponents (1 use)
-- **💨 Double Move**: Extra movement options
-- **🎯 Precision Strike**: Enhanced capture abilities
+- **🛡️ Shield**: Protect tokens from capture (3 turns).
+- **⚡ Speed Boost**: Move twice per turn (2 turns).
+- **🌟 Teleport**: Jump to any safe spot (1 use).
+- **🔄 Token Swap**: Switch positions with opponents (1 use).
+- **💨 Double Move**: Extra movement options.
+- **🎯 Precision Strike**: Enhanced capture abilities.
 
 ### 🎨 Beautiful Design
 - **Glassmorphism UI**: Modern glass-like interface elements.
