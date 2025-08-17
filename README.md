@@ -33,10 +33,10 @@ A beautiful, feature-rich, and modern web-based Ludo game with multiplayer suppo
 - **Responsive Design**: Perfect on desktop, tablet, and mobile.
 
 ### 🌐 Progressive Web App (PWA)
-- **Install as App**: Add to home screen on any device
-- **Offline Support**: Play without internet connection
-- **Push Notifications**: Game updates and reminders
-- **Background Sync**: Save progress automatically
+- **Install as App**: Add to home screen on any device.
+- **Offline Support**: Play without internet connection.
+- **Push Notifications**: Game updates and reminders.
+- **Background Sync**: Save progress automatically.
 
 ### 🎯 Advanced Features
 - **Custom Rules**: Capture bonuses, time limits, team mode
