@@ -13,9 +13,9 @@ A beautiful, feature-rich, and modern web-based Ludo game with multiplayer suppo
 - **Offline Play**: Full functionality without internet connection
 
 ### 🤖 Advanced AI
-- **3 Difficulty Levels**: Easy, Medium, and Hard AI opponents
-- **Strategic Gameplay**: AI considers captures, safety, and optimal moves
-- **Dynamic Decision Making**: Context-aware move selection
+- **3 Difficulty Levels**: Easy, Medium, and Hard AI opponents.
+- **Strategic Gameplay**: AI considers captures, safety, and optimal moves.
+- **Dynamic Decision Making**: Context-aware move selection.
 
 ### ⚡ Power-ups System
 - **🛡️ Shield**: Protect tokens from capture (3 turns)
